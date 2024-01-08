@@ -1,0 +1,4 @@
+[workspace]
+default-members = ["game-manager"]
+members = ["engine-deploy", "engines", "game-manager"]
+resolver = "2"
