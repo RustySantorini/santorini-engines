@@ -5,7 +5,7 @@ pub use crate::flop::Flop;
 
 use crate::models::Engine;
 
-pub fn get_engine(name: &str) -> Option<Box<dyn Engine>> {
+pub fn get_engine<T: Engine>(name: &str) -> Option<Box<dyn Engine>> {
     match name {
         "flop" => Some(Box::new(Flop::new())),
         _ => None,
