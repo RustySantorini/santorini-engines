@@ -17,7 +17,7 @@ pub struct Board {
     pub turn: Turn,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 enum MoveError {
     InvalidFromSquare,
     InvalidToSquare,
@@ -29,20 +29,20 @@ enum MoveError {
 
 impl Board {
     fn square_is_free(&self, square:usize) -> bool {
-        self.workers[W1] != square && self.workers[W2] != square && self.workers[U1] != square && self.workers[U2] != square &&
+        self.workers[0] != square && self.workers[1] != square && self.workers[2] != square && self.workers[3] != square &&
         self.blocks[square] < 4
     }
 
     fn move_is_legal(&self, mv: Move) -> Result<(), MoveError> {
-        if mv.from != W1 && mv.from != W2 && mv.from != U1 && mv.from != U2 {
+        if mv.from != 0 && mv.from != 1 && mv.from != 2 && mv.from != 3 {
             return Err(MoveError::InvalidFromSquare);
         }
     
-        if mv.to < A1 || mv.to > E5 {
+        if mv.to > 24 {
             return Err(MoveError::InvalidToSquare);
         }
 
-        if mv.build < A1 || mv.to > E5 {
+        if mv.to > 24 {
             return Err(MoveError::InvalidBuildSquare);
         }
 
@@ -80,11 +80,11 @@ mod tests {
                      0, 4, 0, 2, 0,
                      0, 0, 0, 0, 0,
                      0, 0, 0, 0, 0],
-            workers: [C4, D4, B3, C3],
+            workers: [13, 18, 7, 12],
             turn: Turn::W,
         };
 
-        let invalid_move = Move { from: -1, to: D5, build: C5 };
+        let invalid_move = Move { from: 25, to: 19, build: 14 };
         assert_eq!(board.move_is_legal(invalid_move), Err(MoveError::InvalidFromSquare));
     }
 }
