@@ -2,7 +2,7 @@ use num_enum::IntoPrimitive;
 
 #[derive(IntoPrimitive)]
 #[repr(usize)]
-pub(crate) enum Turn {
+pub enum Turn {
     W,
     U,
 }
