@@ -1,9 +1,13 @@
+mod flop;
 mod models;
+
+pub use crate::flop::Flop;
 
 use crate::models::Engine;
 
-pub fn get_engine<T: Engine>(name: &str) -> Option<T> {
+pub fn get_engine<T: Engine>(name: &str) -> Option<Box<dyn Engine>> {
     match name {
+        "flop" => Some(Box::new(Flop::new())),
         _ => None,
     }
 }

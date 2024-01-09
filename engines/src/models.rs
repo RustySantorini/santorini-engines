@@ -61,8 +61,8 @@ pub struct Request {
 }
 
 pub trait Engine {
-    fn new() -> Self;
-    
+    fn new() -> Self where Self: Sized;
+
     fn get_info(&self) -> EngineInfo;
-    fn get_move(request:Request) -> Move;
+    fn get_move(&self, request:Request) -> Move;
 }
