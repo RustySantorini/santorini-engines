@@ -1,8 +1,17 @@
+mod board_rep;
+
 use crate::models::Square;
 use crate::models::Worker;
 use crate::helpers::Turn;
 use std::collections::HashSet;
 
+
+pub struct Move {
+    // From is the worker index 
+    pub from: usize,
+    pub to: usize,
+    pub build:usize,
+}
 
 pub struct Board {
     pub blocks: [u8; 25],
@@ -61,9 +70,23 @@ impl Board {
     }
 }
 
-pub struct Move {
-    // From is the worker index 
-    pub from: usize,
-    pub to: usize,
-    pub build:usize,
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn invalid_from_square() {
+        let mut board = Board {
+            blocks: [0, 0, 0, 0, 0,
+                     0, 1, 0, 0, 0,
+                     0, 4, 0, 2, 0,
+                     0, 0, 0, 0, 0,
+                     0, 0, 0, 0, 0],
+            workers: [C4, D4, B3, C3],
+            turn: Turn::W,
+        };
+
+        let invalid_move = Move { from: -1, to: D5, build: C5 };
+        assert_eq!(board.move_is_legal(invalid_move), Err(MoveError::InvalidFromSquare));
+    }
 }
