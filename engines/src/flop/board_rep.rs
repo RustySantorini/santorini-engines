@@ -1,5 +1,3 @@
-mod board_rep;
-
 use crate::models::Square;
 use crate::models::Worker;
 use crate::helpers::Turn;
@@ -56,7 +54,7 @@ impl Board {
             return Err(MoveError::OccupiedBuildSquare)
         }
 
-        if (self.squares[to] - self.squares[from]) > 1{
+        if (self.blocks[mv.to] - self.blocks[mv.from]) > 1{
             return Err(MoveError::HeightDifferenceHigh)
         }
     
@@ -65,7 +63,7 @@ impl Board {
 
     fn make_move(&mut self, mv: Move){
         let sq = self.workers[mv.from];
-        self.worker[mv.from] = mv.to;
+        self.workers[mv.from] = mv.to;
         self.blocks[mv.build] += 1;
     }
 }

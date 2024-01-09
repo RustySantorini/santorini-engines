@@ -1,3 +1,6 @@
+mod board_rep;
+
+
 use crate::{Engine, models::{EngineInfo, Move, Request}};
 
 pub struct Flop {
