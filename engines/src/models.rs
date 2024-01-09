@@ -2,7 +2,7 @@ use num_enum::IntoPrimitive;
 use std::time::Duration;
 
 pub struct EngineInfo {
-    pub name: String
+    pub name: String,
 }
 
 #[derive(IntoPrimitive)]
