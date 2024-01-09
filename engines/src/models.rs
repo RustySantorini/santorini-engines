@@ -7,7 +7,7 @@ pub struct EngineInfo {
 
 #[derive(IntoPrimitive)]
 #[repr(usize)]
-enum Square {
+pub enum Square {
     A1,
     A2,
     A3,
@@ -32,20 +32,21 @@ enum Square {
     E2,
     E3,
     E4,
-    E5
+    E5,
 }
 
 #[derive(IntoPrimitive)]
 #[repr(usize)]
-enum Worker {
+pub enum Worker {
     W1,
     W2,
     U1,
-    U2
+    U2,
 }
+
 pub struct Board {
     pub blocks: [u8; 25],
-    pub workers: [usize; 4],
+    pub workers: [Square; 4],
 }
 
 pub struct Move {
