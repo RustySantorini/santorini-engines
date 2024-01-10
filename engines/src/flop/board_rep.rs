@@ -59,6 +59,10 @@ impl Board {
         if (self.blocks[mv.to] - self.blocks[mv.from]) > 1{
             return Err(MoveError::HeightDifferenceHigh)
         }
+
+        if (self.turn == W && (mv.from == U1 || mv.from == U2)) || (self.turn == U && (mv.from == W1 || mv.from == W2)){
+            return Err(MoveError::WorkerOfWrongColor)
+        }
     
         Ok(())
     }
@@ -82,6 +86,15 @@ mod tests {
                  0, 0, 1, 0, 2],
         workers: [C4, D4, B3, C3],
         turn: W,
+    };
+    const test_board_2: Board = Board {
+        blocks: [0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0],
+        workers: [A1, E5, A5, E1],
+        turn: U,
     };
 
     #[test]
@@ -166,6 +179,13 @@ mod tests {
         let mut board = test_board_1;
 
         let mv = Move { from: U1, to: A3, build: A2 };
+        assert_eq!(board.move_is_legal(mv), Err(MoveError::WorkerOfWrongColor));
+    }
+    #[test]
+    fn wrong_color_2() {
+        let mut board = test_board_2;
+
+        let mv = Move { from: W1, to: A2, build: A3 };
         assert_eq!(board.move_is_legal(mv), Err(MoveError::WorkerOfWrongColor));
     }
     #[test]
