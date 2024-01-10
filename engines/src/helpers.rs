@@ -1,10 +1,8 @@
 use num_enum::IntoPrimitive;
 
-#[derive(IntoPrimitive)]
-#[repr(usize)]
-pub enum Turn {
-    W,
-    U,
+pub(crate) mod Turn {
+    pub const W: u8 = 0;
+    pub const U: u8 = 1;
 }
 
 pub(crate) mod Squares {

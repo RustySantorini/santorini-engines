@@ -1,6 +1,6 @@
 use crate::helpers::Squares::*;
 use crate::helpers::Workers::*;
-use crate::helpers::Turn;
+use crate::helpers::Turn::*;
 use std::collections::HashSet;
 
 
@@ -14,7 +14,7 @@ pub struct Move {
 pub struct Board {
     pub blocks: [u8; 25],
     pub workers: [usize; 4],
-    pub turn: Turn,
+    pub turn: u8,
 }
 
 #[derive(Debug, PartialEq)]
@@ -81,7 +81,7 @@ mod tests {
                      0, 0, 0, 0, 0,
                      0, 0, 0, 0, 0],
             workers: [13, 18, 7, 12],
-            turn: Turn::W,
+            turn: W,
         };
 
         let invalid_move = Move { from: 25, to: D5, build: D1 };
