@@ -2,6 +2,41 @@ use crate::helpers::Squares::*;
 use crate::helpers::Workers::*;
 use crate::helpers::Turn::*;
 
+fn get_neighbors(square: usize) -> Vec<usize> {
+    match square {
+        A1 => vec![A2, B1, B2],
+        A2 => vec![A1, A3, B1, B2, B3],
+        A3 => vec![A2, A4, B2, B3, B4],
+        A4 => vec![A3, A5, B3, B4, B5],
+        A5 => vec![A4, B4, B5],
+
+        B1 => vec![A1, A2, B2, C1, C2],
+        B2 => vec![A1, A2, A3, B1, B3, C1, C2, C3],
+        B3 => vec![A2, A3, A4, B2, B4, C2, C3, C4],
+        B4 => vec![A3, A4, A5, B3, B5, C3, C4, C5],
+        B5 => vec![A4, A5, B4, C4, C5],
+
+        C1 => vec![B1, B2, C2, D1, D2],
+        C2 => vec![B1, B2, B3, C1, C3, D1, D2, D3],
+        C3 => vec![B2, B3, B4, C2, C4, D2, D3, D4],
+        C4 => vec![B3, B4, B5, C3, C5, D3, D4, D5],
+        C5 => vec![B4, B5, C4, D4, D5],
+
+        D1 => vec![C1, C2, D2, E1, E2],
+        D2 => vec![C1, C2, C3, D1, D3, E1, E2, E3],
+        D3 => vec![C2, C3, C4, D2, D4, E2, E3, E4],
+        D4 => vec![C3, C4, C5, D3, D5, E3, E4, E5],
+        D5 => vec![C4, C5, D4, E4, E5],
+
+        E1 => vec![D1, D2, E2],
+        E2 => vec![D1, D2, D3, E1, E3],
+        E3 => vec![D2, D3, D4, E2, E4],
+        E4 => vec![D3, D4, D5, E3, E5],
+        E5 => vec![D4, D5, E4],
+
+        _ => vec![]
+    }
+}
 
 pub struct Move {
     // From is the worker index 
@@ -63,7 +98,12 @@ impl Board {
         if (self.turn == W && (mv.from == U1 || mv.from == U2)) || (self.turn == U && (mv.from == W1 || mv.from == W2)){
             return Err(MoveError::WorkerOfWrongColor)
         }
-    
+        if !get_neighbors(mv.to).contains(&self.workers[mv.from]){
+            return Err(MoveError::ToSquareInaccessible);
+        }
+        if !get_neighbors(mv.build).contains(&mv.to){
+            return Err(MoveError::BuildSquareInaccessible);
+        }
         Ok(())
     }
 
