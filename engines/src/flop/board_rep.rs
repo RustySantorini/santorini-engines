@@ -1,5 +1,5 @@
-use crate::models::Square;
-use crate::models::Worker;
+use crate::helpers::Squares::*;
+use crate::helpers::Workers::*;
 use crate::helpers::Turn;
 use std::collections::HashSet;
 
@@ -29,20 +29,20 @@ enum MoveError {
 
 impl Board {
     fn square_is_free(&self, square:usize) -> bool {
-        self.workers[0] != square && self.workers[1] != square && self.workers[2] != square && self.workers[3] != square &&
+        self.workers[W1] != square && self.workers[W2] != square && self.workers[U1] != square && self.workers[U2] != square &&
         self.blocks[square] < 4
     }
 
     fn move_is_legal(&self, mv: Move) -> Result<(), MoveError> {
-        if mv.from != 0 && mv.from != 1 && mv.from != 2 && mv.from != 3 {
+        if mv.from != W1 && mv.from != W2 && mv.from != U1 && mv.from != U2 {
             return Err(MoveError::InvalidFromSquare);
         }
     
-        if mv.to > 24 {
+        if mv.to > E5 {
             return Err(MoveError::InvalidToSquare);
         }
 
-        if mv.to > 24 {
+        if mv.to > E5 {
             return Err(MoveError::InvalidBuildSquare);
         }
 
@@ -84,7 +84,7 @@ mod tests {
             turn: Turn::W,
         };
 
-        let invalid_move = Move { from: 25, to: 19, build: 14 };
+        let invalid_move = Move { from: 25, to: D5, build: D1 };
         assert_eq!(board.move_is_legal(invalid_move), Err(MoveError::InvalidFromSquare));
     }
 }
