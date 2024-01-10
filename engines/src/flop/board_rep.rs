@@ -52,7 +52,7 @@ impl Board {
             return Err(MoveError::OccupiedToSquare)
         }
 
-        if !self.square_is_free(mv.build){
+        if (!self.square_is_free(mv.build) && mv.build != self.workers[mv.from]) || (mv.build == mv.to){ 
             return Err(MoveError::OccupiedBuildSquare)
         }
 
