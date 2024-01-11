@@ -19,7 +19,7 @@ impl Engine for Flop {
         Move {
             from: 0,
             to: 0,
-            build: 0,
+            build: Some(0),
         }
     }
 }
