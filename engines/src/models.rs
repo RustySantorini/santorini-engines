@@ -12,7 +12,7 @@ pub struct Board {
 pub struct Move {
     pub from: usize,
     pub to: usize,
-    pub build:usize,
+    pub build: Option<usize>,
 }
 
 pub struct Request {
