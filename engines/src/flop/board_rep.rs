@@ -38,6 +38,11 @@ fn get_neighbors(square: usize) -> Vec<usize> {
     }
 }
 
+pub struct HalfMove{
+    pub from: usize,
+    pub to: usize,
+}
+
 pub struct Move {
     // From is the worker index 
     pub from: usize,
@@ -70,37 +75,45 @@ impl Board {
         self.blocks[square] < 4
     }
 
-    fn move_is_legal(&self, mv: Move) -> Result<(), MoveError> {
-        if mv.from != W1 && mv.from != W2 && mv.from != U1 && mv.from != U2 {
+    fn half_move_is_legal(&self, hm: HalfMove) -> Result<(), MoveError> {
+        if hm.from != W1 && hm.from != W2 && hm.from != U1 && hm.from != U2 {
             return Err(MoveError::InvalidFromSquare);
         }
     
-        if mv.to > E5 {
+        if hm.to > E5 {
             return Err(MoveError::InvalidToSquare);
         }
 
-        if mv.build > E5 {
-            return Err(MoveError::InvalidBuildSquare);
+        if !self.square_is_free(hm.to){
+            return Err(MoveError::OccupiedToSquare)
         }
 
-        if !self.square_is_free(mv.to){
-            return Err(MoveError::OccupiedToSquare)
+        if (self.blocks[hm.to] - self.blocks[hm.from]) > 1{
+            return Err(MoveError::HeightDifferenceHigh)
+        }
+
+        if (self.turn == W && (hm.from == U1 || hm.from == U2)) || (self.turn == U && (hm.from == W1 || hm.from == W2)){
+            return Err(MoveError::WorkerOfWrongColor)
+        }
+        if !get_neighbors(hm.to).contains(&self.workers[hm.from]){
+            return Err(MoveError::ToSquareInaccessible);
+        }
+        Ok(())
+    }
+
+    fn move_is_legal(&self, mv: Move) -> Result<(), MoveError> {
+        let half_move = HalfMove{from: mv.from, to: mv.to};
+
+        self.half_move_is_legal(half_move)?;
+
+        if mv.build > E5 {
+            return Err(MoveError::InvalidBuildSquare);
         }
 
         if (!self.square_is_free(mv.build) && mv.build != self.workers[mv.from]) || (mv.build == mv.to){ 
             return Err(MoveError::OccupiedBuildSquare)
         }
 
-        if (self.blocks[mv.to] - self.blocks[mv.from]) > 1{
-            return Err(MoveError::HeightDifferenceHigh)
-        }
-
-        if (self.turn == W && (mv.from == U1 || mv.from == U2)) || (self.turn == U && (mv.from == W1 || mv.from == W2)){
-            return Err(MoveError::WorkerOfWrongColor)
-        }
-        if !get_neighbors(mv.to).contains(&self.workers[mv.from]){
-            return Err(MoveError::ToSquareInaccessible);
-        }
         if !get_neighbors(mv.build).contains(&mv.to){
             return Err(MoveError::BuildSquareInaccessible);
         }
@@ -112,6 +125,21 @@ impl Board {
         self.workers[mv.from] = mv.to;
         self.blocks[mv.build] += 1;
     }
+
+    // fn generate_half_moves(&self){
+    //     let from_squares = match self.turn {
+    //         W => vec![&self.workers[0], &self.workers[1]],
+    //         U => vec![&self.workers[2], &self.workers[3]],
+    //         _ => panic!("NR")
+    //     };
+
+    //     from_squares
+    //     .iter()
+    //     .map(|&from| {
+    //         let square = self.workers[from]
+    //     })
+    //     .collect();
+    // }
 
     fn generate_moves(&self)-> Vec<Move>{
         vec![]
