@@ -112,6 +112,10 @@ impl Board {
         self.workers[mv.from] = mv.to;
         self.blocks[mv.build] += 1;
     }
+
+    fn generate_moves(&self)-> Vec<Move>{
+        vec![]
+    }
 }
 
 #[cfg(test)]
@@ -255,5 +259,90 @@ mod tests {
 
         let mv = Move { from: W1, to: C5, build: B5 };
         assert_eq!(board.move_is_legal(mv), Ok(()));
+    }
+    
+    #[test]
+    fn opening_position() {
+        let board = Board {
+            blocks: [0, 0, 0, 0, 0,
+                     0, 0, 0, 0, 0,
+                     0, 0, 0, 0, 0,
+                     0, 0, 0, 0, 0,
+                     0, 0, 0, 0, 0],
+            workers: [B3, C3, C2, C4],
+            turn: W,
+        };
+        let len_moves = board.generate_moves().len();
+        assert_eq!(len_moves, 59);
+    }
+    #[test]
+    fn trapped_worker() {
+        let board = Board {
+            blocks: [0, 0, 0, 2, 0,
+                     0, 0, 0, 0, 3,
+                     0, 0, 0, 0, 0,
+                     0, 0, 0, 0, 0,
+                     0, 0, 0, 0, 0],
+            workers: [A5, C3, B3, B4],
+            turn: W,
+        };
+        let len_moves = board.generate_moves().len();
+        assert_eq!(len_moves, 44);
+    }
+    #[test]
+    fn winning_move() {
+        let board = Board {
+            blocks: [0, 0, 0, 0, 0,
+                     0, 3, 0, 0, 0,
+                     0, 2, 0, 0, 0,
+                     0, 0, 0, 0, 0,
+                     0, 0, 0, 0, 0],
+            workers: [C2, C3, B3, B4],
+            turn: W,
+        };
+        let len_moves = board.generate_moves().len();
+        assert_eq!(len_moves, 58 );
+    }
+    #[test]
+    fn domed() {
+        let board = Board {
+            blocks: [0, 0, 0, 0, 0,
+                     0, 0, 0, 0, 0,
+                     4, 4, 0, 0, 0,
+                     0, 0, 0, 0, 0,
+                     0, 0, 0, 0, 0],
+            workers: [A1, E1, D2, E2],
+            turn: W,
+        };
+        let len_moves = board.generate_moves().len();
+        assert_eq!(len_moves, 15);
+    }
+    #[test]
+    fn multiple_heights() {
+        let board = Board {
+            blocks: [0, 0, 0, 0, 0,
+                     0, 0, 2, 0, 0,
+                     0, 1, 2, 1, 0,
+                     0, 0, 3, 0, 0,
+                     0, 0, 0, 0, 0],
+            workers: [C2, C4, B3, A3],
+            turn: W,
+        };
+        let len_moves = board.generate_moves().len();
+        assert_eq!(len_moves, 70);
+    }
+    #[test]
+    fn zero_moves() {
+        let board = Board {
+            blocks: [1, 0, 0, 0, 0,
+                     1, 3, 0, 0, 0,
+                     4, 0, 0, 0, 0,
+                     0, 0, 0, 0, 0,
+                     0, 0, 0, 0, 0],
+            workers: [A1, B1, A2, C2],
+            turn: W,
+        };
+        let len_moves = board.generate_moves().len();
+        assert_eq!(len_moves, 0);
     }
 }
