@@ -38,11 +38,14 @@ fn get_neighbors(square: usize) -> Vec<usize> {
     }
 }
 
+
+#[derive(Clone, Copy, Debug)]
 pub struct HalfMove{
     pub from: usize,
     pub to: usize,
 }
 
+#[derive(Clone, Copy)]
 pub struct Move {
     // From is the worker index 
     pub from: usize,
@@ -67,6 +70,7 @@ enum MoveError {
     ToSquareInaccessible,
     BuildSquareInaccessible,
     WorkerOfWrongColor,
+    InvalidBuildOnWin
 }
 
 impl Board {
@@ -88,7 +92,7 @@ impl Board {
             return Err(MoveError::OccupiedToSquare)
         }
 
-        if (self.blocks[hm.to] - self.blocks[hm.from]) > 1{
+        if (self.blocks[hm.to] > self.blocks[self.workers[hm.from]] + 1){
             return Err(MoveError::HeightDifferenceHigh)
         }
 
@@ -117,6 +121,11 @@ impl Board {
         if !get_neighbors(mv.build).contains(&mv.to){
             return Err(MoveError::BuildSquareInaccessible);
         }
+        
+        if self.blocks[mv.to] == 3 && mv.build != self.workers[mv.from]{
+            return Err(MoveError::InvalidBuildOnWin);
+        }
+
         Ok(())
     }
 
@@ -126,23 +135,50 @@ impl Board {
         self.blocks[mv.build] += 1;
     }
 
-    // fn generate_half_moves(&self){
-    //     let from_squares = match self.turn {
-    //         W => vec![&self.workers[0], &self.workers[1]],
-    //         U => vec![&self.workers[2], &self.workers[3]],
-    //         _ => panic!("NR")
-    //     };
+    fn generate_half_moves(&self) -> Vec<HalfMove> {
+        let from_squares = match self.turn {
+            W => vec![0, 1],
+            U => vec![2, 3],
+            _ => unreachable!(),
+        };
+    
+        from_squares
+        .iter()
+        .flat_map(|from| {
+            let from_square = self.workers[*from];
+            get_neighbors(from_square)
+                .iter()
+                .map(|neighbor| HalfMove {
+                    from: *from,
+                    to: *neighbor,
+                })
+                .collect::<Vec<HalfMove>>()
+        })
+        .collect()
+    }
 
-    //     from_squares
-    //     .iter()
-    //     .map(|&from| {
-    //         let square = self.workers[from]
-    //     })
-    //     .collect();
-    // }
+    fn generate_full_moves(&self, half_move:HalfMove) -> Vec<Move> {
+        get_neighbors(half_move.to)
+            .iter()
+            .map(|neighbor| 
+                Move {
+                from: half_move.from,
+                to: half_move.to,
+                build: *neighbor
+            })
+            .collect::<Vec<Move>>()
+    }
 
-    fn generate_moves(&self)-> Vec<Move>{
-        vec![]
+    fn generate_moves(&self) -> Vec<Move> {
+        self.generate_half_moves()
+            .into_iter()
+            .filter(|half_move| self.half_move_is_legal(*half_move).is_ok())
+            .flat_map(|half_move| {
+                self.generate_full_moves(half_move)
+                    .into_iter()
+                    .filter(|full_move| self.move_is_legal(*full_move).is_ok())
+            })
+            .collect()
     }
 }
 
@@ -167,6 +203,15 @@ mod tests {
                  0, 0, 0, 0, 0],
         workers: [A1, E5, A5, E1],
         turn: U,
+    };
+    const test_board_3: Board = Board {
+        blocks: [0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0,
+                 0, 0, 0, 2, 3,
+                 0, 0, 0, 0, 0,
+                 0, 0, 0, 0, 0],
+        workers: [C4, D4, B3, C3],
+        turn: W,
     };
 
     #[test]
@@ -259,6 +304,12 @@ mod tests {
 
         let mv = Move { from: W1, to: A2, build: A3 };
         assert_eq!(board.move_is_legal(mv), Err(MoveError::WorkerOfWrongColor));
+    }
+    #[test]
+    fn wrong_build_on_win() {
+        let mut board = test_board_3;
+        let mv = Move { from: W1, to: C5, build: D5 };
+        assert_eq!(board.move_is_legal(mv), Err(MoveError::InvalidBuildOnWin));
     }
     #[test]
     fn normal_move() {
