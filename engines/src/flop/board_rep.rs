@@ -130,9 +130,13 @@ impl Board {
     }
 
     fn make_move(&mut self, mv: Move){
-        let sq = self.workers[mv.from];
         self.workers[mv.from] = mv.to;
         self.blocks[mv.build] += 1;
+    }
+
+    fn undo_move(&mut self, mv: Move){
+        self.workers[mv.to] = mv.from;
+        self.blocks[mv.build] -= 1;
     }
 
     fn generate_half_moves(&self) -> Vec<HalfMove> {
