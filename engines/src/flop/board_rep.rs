@@ -1,6 +1,6 @@
-use crate::helpers::Squares::*;
-use crate::helpers::Workers::*;
-use crate::helpers::Turn::*;
+use crate::helpers::squares::*;
+use crate::helpers::workers::*;
+use crate::helpers::turn::*;
 
 fn get_neighbors(square: usize) -> Vec<usize> {
     match square {
@@ -91,7 +91,7 @@ impl Board {
             return Err(MoveError::OccupiedToSquare)
         }
 
-        if (self.blocks[hm.to] > self.blocks[hm.from] + 1){
+        if self.blocks[hm.to] > self.blocks[hm.from] + 1{
             return Err(MoveError::HeightDifferenceHigh)
         }
 
