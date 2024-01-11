@@ -1,11 +1,9 @@
-use num_enum::IntoPrimitive;
-
-pub(crate) mod Turn {
+pub(crate) mod turn {
     pub const W: u8 = 0;
     pub const U: u8 = 1;
 }
 
-pub(crate) mod Squares {
+pub(crate) mod squares {
     pub const A1: usize = 0;
     pub const A2: usize = 1;
     pub const A3: usize = 2;
@@ -38,7 +36,7 @@ pub(crate) mod Squares {
 
 }
 
-pub(crate) mod Workers {
+pub(crate) mod workers {
     pub const W1: usize = 0;
     pub const W2: usize = 1;
     pub const U1: usize = 2;
