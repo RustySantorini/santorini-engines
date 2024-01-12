@@ -51,7 +51,7 @@ pub struct Move {
     pub to: usize,
     pub build:usize,
 }
-#[derive(PartialEq, Debug)]
+#[derive(PartialEq, Debug, Clone)]
 pub struct Board {
     pub blocks: [u8; 25],
     pub workers: [usize; 4],
@@ -129,7 +129,7 @@ impl Board {
         Ok(())
     }
 
-    fn make_move(&mut self, mv: Move){
+    pub fn make_move(&mut self, mv: Move){
         let worker_to_move =
             match self.workers.iter().position(|&x| x == mv.from) {
                 Some(index) => index,
@@ -140,7 +140,7 @@ impl Board {
         self.turn = 1 - self.turn;
     }
 
-    fn undo_move(&mut self, mv: Move){
+    pub fn undo_move(&mut self, mv: Move){
         let worker_to_move =
             match self.workers.iter().position(|&x| x == mv.to) {
                 Some(index) => index,
@@ -184,7 +184,7 @@ impl Board {
             .collect::<Vec<Move>>()
     }
 
-    fn generate_moves(&self) -> Vec<Move> {
+    pub fn generate_moves(&self) -> Vec<Move> {
         self.generate_half_moves()
             .into_iter()
             .filter(|half_move| self.half_move_is_legal(*half_move).is_ok())
