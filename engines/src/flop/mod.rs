@@ -1,5 +1,5 @@
 mod board_rep;
-
+mod eval;
 
 use crate::{Engine, models::{EngineInfo, Move, Request}};
 
