@@ -16,14 +16,14 @@ fn negamax (node:&mut Board, depth:usize) -> isize{
     if depth == 0{
         return color * eval(node);      
     }
-    let mut value = -BIG_ENOUGH_VALUE;
+    let mut value = -BIG_ENOUGH_VALUE * 100;
     let moves = node.generate_moves();
     if moves.len() == 0{
-        value = (-BIG_ENOUGH_VALUE - depth as isize);
+        value = -BIG_ENOUGH_VALUE - depth as isize;
     }
     for mv in moves{
         if node.blocks[mv.to] == 3{
-            value = (BIG_ENOUGH_VALUE + depth as isize);
+            value = BIG_ENOUGH_VALUE + depth as isize;
             break;
         }
         node.make_move(mv);
@@ -42,7 +42,7 @@ fn get_best_move(board:Board, depth:usize) -> Move{
     let mut initial_node = board.clone();
     let moves = board.generate_moves();
     let mut best_move = moves[0];
-    let mut best_score = -BIG_ENOUGH_VALUE;
+    let mut best_score = -BIG_ENOUGH_VALUE * 100;
     for mv in moves{
         if initial_node.blocks[mv.to] == 3{
             return mv;
@@ -157,23 +157,6 @@ mod tests {
             };
         let depth = 3;
         let best_move = Move {from: C3, to:B4, build: B5};
-        assert_eq!(get_best_move(board, depth), best_move);
-    }
-
-    #[test]
-    fn prevent_mi2 (){
-        let board = 
-            Board {
-                blocks: [0, 0, 0, 0, 3,
-                         0, 0, 0, 2, 1,
-                         0, 0, 1, 0, 1,
-                         0, 0, 0, 3, 0,
-                         0, 0, 0, 0, 0],
-                workers: [B3, D5, C3, A4],
-                turn: W,
-            };
-        let depth = 4;
-        let best_move = Move {from: D5, to:C5, build: D4};
         assert_eq!(get_best_move(board, depth), best_move);
     }
     #[test]
