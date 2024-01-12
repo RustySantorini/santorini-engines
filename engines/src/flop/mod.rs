@@ -1,6 +1,6 @@
 mod board_rep;
 mod eval;
-
+mod time_management;
 use crate::{Engine, models::{EngineInfo, Move, Request}};
 
 pub struct Flop {
