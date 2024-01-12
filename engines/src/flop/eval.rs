@@ -72,7 +72,7 @@ mod tests {
                 turn: W,
             };
 
-        assert!(eval(&board) < 0);
+        assert!(eval(&board) > 0);
     }
     #[test]
     fn h2_over_h1 (){
@@ -128,7 +128,7 @@ mod tests {
                          0, 0, 0, 0, 0,
                          0, 0, 0, 0, 0,
                          0, 0, 0, 0, 0],
-                workers: [A2, C4, A3, D4],
+                workers: [A2, C4, B2, D4],
                 turn: W,
             };
 
