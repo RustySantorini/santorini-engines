@@ -3,8 +3,26 @@ use crate::helpers::squares::*;
 use crate::helpers::workers::*;
 use crate::helpers::turn::*;
 
-fn eval (board: Board) -> isize {
-    0
+fn position_height (board: &Board, p:fn (&Board, usize) -> usize, a:usize, b:usize, c:usize, worker_pos:usize) -> usize {
+    let h = board.blocks[worker_pos];
+    a * b.pow(h.into()) + c * p(board, worker_pos)
+}
+
+fn num_neighbors(_:&Board, worker_pos:usize) -> usize{
+    get_neighbors(worker_pos).len()
+}
+
+fn neighbor_height(board:&Board, a:usize, b:usize, c:usize, worker_pos:usize) -> usize {
+    position_height(board, num_neighbors, a, b, c, worker_pos)
+}
+
+fn nh_s(board:&Board, worker_pos:usize) -> usize{
+    neighbor_height(board, 6, 2, 1, worker_pos)
+}
+
+pub fn eval (board: &Board) -> isize {
+    (nh_s(board, board.workers[W1]) + nh_s(board, board.workers[W2])) as isize -
+    (nh_s(board, board.workers[U1]) + nh_s(board, board.workers[U2])) as isize
 }
 
 
@@ -24,7 +42,7 @@ mod tests {
                 turn: W,
             };
 
-        assert_eq!(eval(board), 0);
+        assert_eq!(eval(&board), 0);
     }
     #[test]
     fn simple_height (){
@@ -39,7 +57,7 @@ mod tests {
                 turn: W,
             };
 
-        assert!(eval(board) < 0);
+        assert!(eval(&board) < 0);
     }
     #[test]
     fn simple_pos (){
@@ -54,7 +72,7 @@ mod tests {
                 turn: W,
             };
 
-        assert!(eval(board) < 0);
+        assert!(eval(&board) < 0);
     }
     #[test]
     fn h2_over_h1 (){
@@ -69,7 +87,7 @@ mod tests {
                 turn: W,
             };
 
-        assert!(eval(board) > 0);
+        assert!(eval(&board) > 0);
     }
     #[test]
     fn h_not_all (){
@@ -84,7 +102,7 @@ mod tests {
                 turn: W,
             };
 
-        assert!(eval(board) < 0);
+        assert!(eval(&board) < 0);
     }
     #[test]
     fn border_over_corner (){
@@ -99,7 +117,7 @@ mod tests {
                 turn: W,
             };
 
-        assert!(eval(board) < 0);
+        assert!(eval(&board) < 0);
     }
     #[test]
     fn center_over_border (){
@@ -114,7 +132,7 @@ mod tests {
                 turn: W,
             };
 
-        assert!(eval(board) < 0);
+        assert!(eval(&board) < 0);
     }
     #[test]
     fn height_over_pos (){
@@ -129,6 +147,6 @@ mod tests {
                 turn: W,
             };
 
-        assert!(eval(board) > 0);
+        assert!(eval(&board) > 0);
     }
 }

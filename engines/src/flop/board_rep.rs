@@ -2,7 +2,7 @@ use crate::helpers::squares::*;
 use crate::helpers::workers::*;
 use crate::helpers::turn::*;
 
-fn get_neighbors(square: usize) -> Vec<usize> {
+pub fn get_neighbors(square: usize) -> Vec<usize> {
     match square {
         A1 => vec![A2, B1, B2],
         A2 => vec![A1, A3, B1, B2, B3],
