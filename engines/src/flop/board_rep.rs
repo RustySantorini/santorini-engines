@@ -45,7 +45,7 @@ pub struct HalfMove{
     pub to: usize,
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Move {
     pub from: usize,
     pub to: usize,
