@@ -56,6 +56,7 @@ pub struct Board {
     pub blocks: [u8; 25],
     pub workers: [usize; 4],
     pub turn: u8,
+    pub moves: Vec<Move>,
 }
 
 #[derive(Debug, PartialEq)]
@@ -138,6 +139,7 @@ impl Board {
         self.workers[worker_to_move] = mv.to;
         self.blocks[mv.build] += 1;
         self.turn = 1 - self.turn;
+        self.moves.push(mv);
     }
 
     pub fn undo_move(&mut self, mv: Move){
@@ -149,6 +151,7 @@ impl Board {
         self.workers[worker_to_move] = mv.from;
         self.blocks[mv.build] -= 1;
         self.turn = 1 - self.turn;
+        self.moves.pop();
     }
 
     fn generate_half_moves(&self) -> Vec<HalfMove> {
@@ -209,6 +212,7 @@ mod tests {
                  0, 0, 1, 0, 2],
         workers: [C4, D4, B3, C3],
         turn: W,
+        moves: vec![],
     };
     const test_board_2: Board = Board {
         blocks: [0, 0, 0, 0, 0,
@@ -218,6 +222,7 @@ mod tests {
                  0, 0, 0, 0, 0],
         workers: [A1, E5, A5, E1],
         turn: U,
+        moves: vec![],
     };
     const test_board_3: Board = Board {
         blocks: [0, 0, 0, 0, 0,
@@ -227,6 +232,7 @@ mod tests {
                  0, 0, 0, 0, 0],
         workers: [C4, D4, B3, C3],
         turn: W,
+        moves: vec![],
     };
     #[test]
     fn worker_not_found() {
@@ -364,6 +370,7 @@ mod tests {
                      0, 0, 0, 0, 0],
             workers: [B3, C3, C2, C4],
             turn: W,
+            moves: vec![],
         };
         let len_moves = board.generate_moves().len();
         assert_eq!(len_moves, 59);
@@ -378,6 +385,7 @@ mod tests {
                      0, 0, 0, 0, 0],
             workers: [A5, C3, B3, B4],
             turn: W,
+            moves: vec![],
         };
         let len_moves = board.generate_moves().len();
         assert_eq!(len_moves, 44);
@@ -392,6 +400,7 @@ mod tests {
                      0, 0, 0, 0, 0],
             workers: [C2, C3, B3, B4],
             turn: W,
+            moves: vec![],
         };
         let len_moves = board.generate_moves().len();
         assert_eq!(len_moves, 58 );
@@ -406,6 +415,7 @@ mod tests {
                      0, 0, 0, 0, 0],
             workers: [A1, E1, D2, E2],
             turn: W,
+            moves: vec![],
         };
         let len_moves = board.generate_moves().len();
         assert_eq!(len_moves, 15);
@@ -420,6 +430,7 @@ mod tests {
                      0, 0, 0, 0, 0],
             workers: [C2, C4, B3, A3],
             turn: W,
+            moves: vec![],
         };
         let len_moves = board.generate_moves().len();
         assert_eq!(len_moves, 70);
@@ -434,6 +445,7 @@ mod tests {
                      0, 0, 0, 0, 0],
             workers: [A1, B1, A2, C2],
             turn: W,
+            moves: vec![],
         };
         let len_moves = board.generate_moves().len();
         assert_eq!(len_moves, 0);
@@ -448,6 +460,7 @@ mod tests {
                      0, 0, 0, 0, 0],
             workers: [C3, C4, B3, D3],
             turn: W,
+            moves: vec![],
         };
         let mv = Move{from: C3, to:C2, build:C1};
         board.make_move(mv);
@@ -460,6 +473,7 @@ mod tests {
                      0, 0, 0, 0, 0],
             workers: [C2, C4, B3, D3],
             turn: U,
+            moves: vec![mv],
         };
         assert_eq!(board, board_2);
     }
@@ -473,6 +487,7 @@ mod tests {
                      0, 0, 0, 0, 0],
             workers: [C3, C4, B3, D3],
             turn: W,
+            moves: vec![],
         };
         let mv = Move{from: C3, to:C2, build:C1};
         board.make_move(mv);
@@ -486,6 +501,7 @@ mod tests {
                      0, 0, 0, 0, 0],
             workers: [C3, C4, B3, D3],
             turn: W,
+            moves: vec![],
         };
         assert_eq!(board, board_2);
     }
