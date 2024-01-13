@@ -6,6 +6,7 @@ use crate::flop::eval::*;
 
 const BIG_ENOUGH_VALUE:isize = 10000;
 
+
 fn negamax (node:&mut Board, depth:usize) -> isize{
     let color =
         match node.turn {
@@ -13,6 +14,14 @@ fn negamax (node:&mut Board, depth:usize) -> isize{
             U => -1,
             _ => unreachable!(),
         };
+    match node.moves.last() {
+        Some(last) => {
+            if node.blocks[last.to] == 3 {
+                return -BIG_ENOUGH_VALUE - depth as isize;
+            }
+        }
+        None => {}
+    }   
     if depth == 0{
         return color * eval(node);      
     }
@@ -22,10 +31,6 @@ fn negamax (node:&mut Board, depth:usize) -> isize{
         value = -BIG_ENOUGH_VALUE - depth as isize;
     }
     for mv in moves{
-        if node.blocks[mv.to] == 3{
-            value = BIG_ENOUGH_VALUE + depth as isize;
-            break;
-        }
         node.make_move(mv);
         let new_value = -negamax(node, depth-1);
         if new_value > value{
@@ -44,9 +49,6 @@ fn get_best_move(board:Board, depth:usize) -> Move{
     let mut best_move = moves[0];
     let mut best_score = -BIG_ENOUGH_VALUE * 100;
     for mv in moves{
-        if initial_node.blocks[mv.to] == 3{
-            return mv;
-        }
         initial_node.make_move(mv);
         let score = -negamax(&mut initial_node, depth-1);
         if score > best_score{
