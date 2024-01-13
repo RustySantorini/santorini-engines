@@ -7,6 +7,7 @@ pub struct EngineInfo {
 pub struct Board {
     pub blocks: [u8; 25],
     pub workers: [usize; 4],
+    pub turn: u8,
 }
 
 pub struct Move {
