@@ -2,6 +2,13 @@ use std::time::Duration;
 
 pub struct EngineInfo {
     pub name: String,
+    pub eval_range: (isize, isize),
+}
+
+pub struct SearchResult{
+    pub mv: Move,
+    pub eval: Option<isize>,
+    pub pv: Option<Vec<Move>>,
 }
 
 pub struct Board {
@@ -25,5 +32,5 @@ pub trait Engine {
     fn new() -> Self where Self: Sized;
 
     fn get_info(&self) -> EngineInfo;
-    fn get_move(&self, request:Request) -> Move;
+    fn get_move(&self, request:Request) -> SearchResult;
 }
