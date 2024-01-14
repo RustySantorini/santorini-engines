@@ -40,6 +40,7 @@ mod tests {
                          0, 0, 0, 0, 0],
                 workers: [C3, C4, B3, D3],
                 turn: W,
+                moves: vec![],
             };
 
         assert_eq!(eval(&board), 0);
@@ -55,6 +56,7 @@ mod tests {
                          0, 0, 0, 0, 0],
                 workers: [B2, B4, D2, D4],
                 turn: W,
+                moves: vec![],
             };
 
         assert!(eval(&board) < 0);
@@ -70,6 +72,7 @@ mod tests {
                          0, 0, 0, 0, 0],
                 workers: [C2, C1, C4, A1],
                 turn: W,
+                moves: vec![],
             };
 
         assert!(eval(&board) > 0);
@@ -85,6 +88,7 @@ mod tests {
                          0, 0, 0, 0, 0],
                 workers: [A1, C4, C3, D4],
                 turn: W,
+                moves: vec![],
             };
 
         assert!(eval(&board) > 0);
@@ -100,6 +104,7 @@ mod tests {
                          0, 0, 0, 0, 0],
                 workers: [A1, A5, C4, D4],
                 turn: W,
+                moves: vec![],
             };
 
         assert!(eval(&board) < 0);
@@ -115,6 +120,7 @@ mod tests {
                          0, 0, 0, 0, 0],
                 workers: [A1, C4, A2, D4],
                 turn: W,
+                moves: vec![],
             };
 
         assert!(eval(&board) < 0);
@@ -130,6 +136,7 @@ mod tests {
                          0, 0, 0, 0, 0],
                 workers: [A2, C4, B2, D4],
                 turn: W,
+                moves: vec![],
             };
 
         assert!(eval(&board) < 0);
@@ -145,6 +152,7 @@ mod tests {
                          0, 0, 0, 0, 0],
                 workers: [A1, C4, A3, D4],
                 turn: W,
+                moves: vec![],
             };
 
         assert!(eval(&board) > 0);

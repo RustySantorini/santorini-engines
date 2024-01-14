@@ -6,6 +6,8 @@ use crate::flop::eval::*;
 
 const BIG_ENOUGH_VALUE:isize = 10000;
 
+
+
 pub fn negamax (node:&mut Board, depth:usize) -> isize{
     let color =
         match node.turn {
@@ -13,6 +15,14 @@ pub fn negamax (node:&mut Board, depth:usize) -> isize{
             U => -1,
             _ => unreachable!(),
         };
+    match node.moves.last() {
+        Some(last) => {
+            if node.blocks[last.to] == 3 {
+                return -BIG_ENOUGH_VALUE - depth as isize;
+            }
+        }
+        None => {}
+    }   
     if depth == 0{
         return color * eval(node);      
     }
@@ -22,10 +32,6 @@ pub fn negamax (node:&mut Board, depth:usize) -> isize{
         value = -BIG_ENOUGH_VALUE - depth as isize;
     }
     for mv in moves{
-        if node.blocks[mv.to] == 3{
-            value = BIG_ENOUGH_VALUE + depth as isize;
-            break;
-        }
         node.make_move(mv);
         let new_value = -negamax(node, depth-1);
         if new_value > value{
@@ -44,9 +50,6 @@ fn get_best_move(board:Board, depth:usize) -> Move{
     let mut best_move = moves[0];
     let mut best_score = -BIG_ENOUGH_VALUE * 100;
     for mv in moves{
-        if initial_node.blocks[mv.to] == 3{
-            return mv;
-        }
         initial_node.make_move(mv);
         let score = -negamax(&mut initial_node, depth-1);
         if score > best_score{
@@ -72,6 +75,7 @@ mod tests {
                          0, 0, 0, 0, 0],
                 workers: [C3, C2, C4, B3],
                 turn: W,
+                moves: vec![],
             };
         let depth = 1;
         let best_move = Move {from: C2, to:B2, build: C2};
@@ -88,6 +92,7 @@ mod tests {
                          0, 0, 0, 3, 0],
                 workers: [C3, A4, A5, E5],
                 turn: W,
+                moves: vec![],
             };
         let depth = 2;
         let best_move = Move {from: C3, to:C4, build: D5};
@@ -104,6 +109,7 @@ mod tests {
                          0, 0, 0, 0, 0],
                 workers: [D1, E5, C2, D2],
                 turn: W,
+                moves: vec![],
             };
         let depth = 2;
         let best_move = Move {from: D1, to:C1, build: B2};
@@ -120,6 +126,7 @@ mod tests {
                          0, 0, 0, 0, 0],
                 workers: [B3, C2, D5, E5],
                 turn: W,
+                moves: vec![],
             };
         let depth = 3;
         let best_move = Move {from: B3, to:C3, build: B3};
@@ -137,6 +144,7 @@ mod tests {
                          0, 0, 0, 0, 0],
                 workers: [D5, E5, B3, C2],
                 turn: U,
+                moves: vec![],
             };
         let depth = 3;
         let best_move = Move {from: B3, to:C3, build: B3};
@@ -154,6 +162,7 @@ mod tests {
                          0, 0, 0, 0, 0],
                 workers: [C3, A4, C4, B3],
                 turn: W,
+                moves: vec![],
             };
         let depth = 3;
         let best_move = Move {from: C3, to:B4, build: B5};
@@ -170,6 +179,7 @@ mod tests {
                          4, 0, 1, 3, 0],
                 workers: [C5, D3, E2, D5],
                 turn: W,
+                moves: vec![],
             };
         let depth = 4;
         let best_move = Move {from: C5, to:D4, build: E3};
@@ -186,6 +196,7 @@ mod tests {
                          0, 0, 0, 0, 0],
                 workers: [B1, D5, A2, B2],
                 turn: W,
+                moves: vec![],
             };
         let depth = 4;
         let best_move = Move {from: D5, to:C4, build: B3};
@@ -202,6 +213,7 @@ mod tests {
                          0, 0, 0, 0, 0],
                 workers: [A1, A5, B2, C4],
                 turn: W,
+                moves: vec![],
             };
         let depth = 5;
         let best_move = Move {from: A1, to:A2, build: A3};
