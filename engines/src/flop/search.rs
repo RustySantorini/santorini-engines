@@ -98,8 +98,8 @@ fn get_best_move(request: SearchRequest) -> SearchResult {
     }
 
     if let Some((index, &max_value)) = scores.iter().enumerate().max_by_key(|&(_, value)| value) {
-        dbg!(&available_moves);
-        dbg!(&scores);
+        // dbg!(&available_moves);
+        // dbg!(&scores);
         let mv = available_moves[index];
         SearchResult {
             mv: convert_move(board, mv),
@@ -185,7 +185,7 @@ mod tests {
         let board = 
             Board {
                 blocks: [0, 0, 0, 0, 0,
-                         0, 0, 2, 0, 0,
+                         0, 0, 1, 0, 0,
                          0, 0, 2, 0, 0,
                          0, 0, 2, 3, 0,
                          0, 0, 0, 0, 0],
@@ -194,7 +194,7 @@ mod tests {
                 moves: vec![],
             };
         let depth = 3;
-        let best_move = Move {from: B3, to:C3, build: B3};
+        let best_move = Move {from: B3, to:C3, build: D3};
         assert_eq!(get_best_move_test(board, depth), best_move);
     }
 
@@ -203,7 +203,7 @@ mod tests {
         let board = 
             Board {
                 blocks: [0, 0, 0, 0, 0,
-                         0, 0, 2, 0, 0,
+                         0, 0, 1, 0, 0,
                          0, 0, 2, 0, 0,
                          0, 0, 2, 3, 0,
                          0, 0, 0, 0, 0],
@@ -212,7 +212,7 @@ mod tests {
                 moves: vec![],
             };
         let depth = 3;
-        let best_move = Move {from: B3, to:C3, build: B3};
+        let best_move = Move {from: B3, to:C3, build: D3};
         assert_eq!(get_best_move_test(board, depth), best_move);
     }
 
@@ -220,8 +220,8 @@ mod tests {
     fn mi2_fa (){
         let board = 
             Board {
-                blocks: [0, 0, 0, 0, 3,
-                         0, 0, 0, 2, 1,
+                blocks: [0, 0, 0, 0, 2,
+                         0, 0, 0, 2, 2,
                          0, 0, 2, 0, 0,
                          0, 0, 0, 0, 0,
                          0, 0, 0, 0, 0],
@@ -230,7 +230,7 @@ mod tests {
                 moves: vec![],
             };
         let depth = 3;
-        let best_move = Move {from: C3, to:B4, build: B5};
+        let best_move = Move {from: C3, to:B4, build: A5};
         assert_eq!(get_best_move_test(board, depth), best_move);
     }
     #[test]
