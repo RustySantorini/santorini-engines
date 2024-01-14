@@ -6,7 +6,7 @@ use crate::flop::eval::*;
 
 const BIG_ENOUGH_VALUE:isize = 10000;
 
-fn negamax (node:&mut Board, depth:usize) -> isize{
+pub fn negamax (node:&mut Board, depth:usize) -> isize{
     let color =
         match node.turn {
             W => 1,
