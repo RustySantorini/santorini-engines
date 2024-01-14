@@ -5,6 +5,7 @@ pub struct EngineInfo {
     pub eval_range: (isize, isize),
 }
 
+#[derive(Debug)]
 pub struct SearchResult{
     pub mv: Move,
     pub eval: Option<isize>,
@@ -16,7 +17,7 @@ pub struct Board {
     pub workers: [usize; 4],
     pub turn: u8,
 }
-
+#[derive(Debug)]
 pub struct Move {
     pub from: usize,
     pub to: usize,

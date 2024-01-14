@@ -66,9 +66,9 @@ impl Engine for Flop {
             depth += 1;
         }
         if let Some((index, &max_value)) = scores.iter().enumerate().max_by_key(|&(_, value)| value) {
-            let best_move = available_moves[index];
+            let mv = available_moves[index];
             SearchResult{
-                mv: convert_move(board, best_move),
+                mv: convert_move(board, mv),
                 eval: Some(max_value),
                 pv: None,
             }
@@ -79,5 +79,32 @@ impl Engine for Flop {
                 pv: None,
             }
         }    
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::time::Duration;
+
+    use crate::helpers::squares::*;
+    use crate::helpers::turn::*;
+
+    use super::*;
+    #[test]
+    fn t1(){
+        let board = crate::models::Board{
+            blocks: [0, 0, 0, 0, 0,
+                     0, 0, 0, 0, 0,
+                     0, 0, 0, 0, 0,
+                     0, 0, 0, 0, 0,
+                     0, 0, 0, 0, 0],
+            workers: [C2, C3, C4, C5], 
+            turn: U,
+        };
+        let total_time = Duration::from_secs(60);
+        let flop = Flop{};
+        let mv = flop.get_move(Request { board:board, time_left: total_time });
+        dbg!(&mv);
+
     }
 }
