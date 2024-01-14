@@ -46,6 +46,7 @@ impl Engine for Flop {
             blocks: request.board.blocks,
             workers: request.board.workers,
             turn: request.board.turn,
+            moves: vec![],
         };
         let available_moves = board.generate_moves();
         let num_moves = available_moves.len();
