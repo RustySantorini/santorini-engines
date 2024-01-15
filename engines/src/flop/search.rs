@@ -16,12 +16,12 @@ use super::time_management::get_time;
 const BIG_ENOUGH_VALUE:isize = 10000;
 
 pub struct SearchRequest{
-    position:Board,
-    max_depth:usize,
-    time_left:Option<Duration>,
+    pub position:Board,
+    pub max_depth:usize,
+    pub time_left:Option<Duration>,
 }
 
-pub fn negamax (node:&mut Board, depth:usize) -> isize{
+fn negamax (node:&mut Board, depth:usize) -> isize{
     let color =
         match node.turn {
             W => 1,
@@ -57,7 +57,7 @@ pub fn negamax (node:&mut Board, depth:usize) -> isize{
 }
 
 
-fn get_best_move(request: SearchRequest) -> SearchResult {
+pub fn get_best_move(request: SearchRequest) -> SearchResult {
     let thinking_time = match request.time_left {
         Some(duration) => get_time(duration),
         None => std::time::Duration::from_secs(0), // No thinking time if None
