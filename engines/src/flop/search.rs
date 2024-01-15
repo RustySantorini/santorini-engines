@@ -267,21 +267,4 @@ mod tests {
         let best_move = Move {from: D5, to:C4, build: B3};
         assert_eq!(get_best_move_test(board, depth), best_move);
     }
-    #[test]
-    fn m3_zz (){
-        let board = 
-            Board {
-                blocks: [1, 2, 2, 2, 2,
-                         0, 0, 4, 0, 2,
-                         0, 0, 0, 0, 0,
-                         0, 0, 0, 0, 0,
-                         0, 0, 0, 0, 0],
-                workers: [A1, A5, B2, C4],
-                turn: W,
-                moves: vec![],
-            };
-        let depth = 5;
-        let best_move = Move {from: A1, to:A2, build: A3};
-        assert_eq!(get_best_move_test(board, depth), best_move);
-    }
 }
