@@ -1,6 +1,7 @@
 use std::isize::MIN;
 use std::ops::Add;
 use std::time::Duration;
+use std::time::Instant;
 use std::time::SystemTime;
 
 use crate::helpers::squares::*;
@@ -63,7 +64,7 @@ pub fn get_best_move(request: SearchRequest) -> SearchResult {
         None => std::time::Duration::from_secs(0), // No thinking time if None
     };
 
-    let current_time = SystemTime::now();
+    let current_time = Instant::now();
     let limit_time = current_time.add(thinking_time);
 
     let mut running = true;
@@ -77,26 +78,28 @@ pub fn get_best_move(request: SearchRequest) -> SearchResult {
     let num_moves = available_moves.len();
     let best_move = available_moves[0];
     let mut scores: Vec<isize> = vec![MIN; num_moves];
-    let mut depth = 1;
+    let mut depth = 0;
 
     while running {
+        depth += 1;
         for i in 0..num_moves {
             board.make_move(available_moves[i]);
             scores[i] = -negamax(&mut board, depth - 1);
             board.undo_move(available_moves[i]);
+            if let Some(duration) = request.time_left {
+                if Instant::now() > limit_time {
+                    running = false;
+                }
+            }
         }
 
         if depth == request.max_depth {
             running = false;
-        } else if let Some(duration) = request.time_left {
-            if SystemTime::now() > limit_time {
-                running = false;
-            }
-        }
+        } 
 
-        depth += 1;
     }
-
+    let end_time = Instant::now();
+    let time_spent_thinking = end_time - current_time;
     if let Some((index, &max_value)) = scores.iter().enumerate().max_by_key(|&(_, value)| value) {
         // dbg!(&available_moves);
         // dbg!(&scores);
@@ -105,12 +108,16 @@ pub fn get_best_move(request: SearchRequest) -> SearchResult {
             mv: convert_move(board, mv),
             eval: Some(max_value),
             pv: None,
+            time_spent: Some(time_spent_thinking),
+            depth_searched: Some(depth),
         }
     } else {
         SearchResult {
             mv: convert_move(board, best_move),
             eval: None,
             pv: None,
+            time_spent: Some(time_spent_thinking),
+            depth_searched: Some(depth),
         }
     }
 }

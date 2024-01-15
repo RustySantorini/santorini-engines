@@ -10,6 +10,8 @@ pub struct SearchResult{
     pub mv: Move,
     pub eval: Option<isize>,
     pub pv: Option<Vec<Move>>,
+    pub depth_searched: Option<usize>,
+    pub time_spent: Option<Duration>,
 }
 
 pub struct Board {
