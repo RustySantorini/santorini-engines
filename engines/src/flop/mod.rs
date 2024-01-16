@@ -2,14 +2,9 @@ mod board_rep;
 mod eval;
 mod time_management;
 mod search;
-use std::isize::MIN;
-use std::ops::Add;
-use std::time::SystemTime;
-
 use crate::{Engine, models::{EngineInfo, Move, Request, SearchResult, self}};
-
 use self::search::{SearchRequest, get_best_move};
-use self::{time_management::get_time, board_rep::Board};
+use self::time_management::get_time;
 
 fn convert_move(board:board_rep::Board, internal_move: board_rep::Move) -> Move{
     let build =

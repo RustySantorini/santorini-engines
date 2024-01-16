@@ -62,12 +62,37 @@ pub fn unhash_workers(mut hash: usize) -> [usize; 4] {
     w
 }
 
+pub(crate) mod sql_helpers{
+    use crate::models::Board;
+    use rusqlite::{Connection, Result};
+    use super::*;
+    pub fn create_new_position (board: Board, tipo:char) -> Result<()> {
+        // Open a connection to the SQLite database file
+        let conn = Connection::open(r#"D:\santorini\rusty-santorini-engines\engines\src\sql\santorini_db.db"#)?;
+
+        // Convert the blocks array to a string of 25 chars
+        let blocks_str: String = board.blocks.iter().map(|&b| char::from(b)).collect();
+
+        // Convert workers to their respective hash strings
+        let workers = hash_workers(board.workers);
+
+        // Insert data into the table
+        conn.execute(
+            "INSERT INTO TB_POSITION (vl_blocks, vl_workers, cd_tipo, vl_turno) VALUES (?1, ?2, ?3, ?4)",
+            [&blocks_str, &(workers.to_string()), &(tipo.to_string()), &(board.turn.to_string())],
+        )?;
+
+        Ok(())
+    }
+}
 
 #[cfg(test)]
 mod tests {
     use crate::helpers::squares::*;
-
+    use crate::helpers::sql_helpers::*;
+    use crate::models::Board;
     use super::*;
+    use super::turn::W;
     
     #[test]
     fn hashing(){
@@ -79,4 +104,19 @@ mod tests {
         }
     }
 
+    #[test]
+    fn insert_pos(){
+        let board = Board{
+            blocks: [0, 0, 0, 0, 0,
+                     0, 0, 0, 0, 0,
+                     0, 0, 0, 0, 0,
+                     0, 0, 0, 0, 0,
+                     0, 0, 0, 0, 0],
+            workers: [C3, C4, B3, B4],
+            turn: W,
+        };
+        let insertion = create_new_position(board, 'A');
+        dbg!(&insertion);
+        assert!(insertion.is_ok());
+    }
 }
