@@ -28,6 +28,7 @@ pub(crate) mod benchmark{
             position: flop_board,
             max_depth: depth,
             time_left: None,
+            debug:true,
         };
 
         let result = func(request);

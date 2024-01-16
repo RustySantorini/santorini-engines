@@ -57,6 +57,7 @@ impl Engine for Flop {
             // We use a fixed depth to avoid growing to unnecessary depths when a game-ending move is found
             max_depth: 20,
             time_left: Some(thinking_time),
+            debug: false,
         };
         get_best_move(request)
     }
