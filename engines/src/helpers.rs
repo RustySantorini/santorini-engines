@@ -63,12 +63,50 @@ pub fn unhash_workers(mut hash: usize) -> [usize; 4] {
 }
 
 pub(crate) mod sql_helpers{
+    use chrono::prelude::*;
+
     use crate::models::Board;
-    use rusqlite::{Connection, Result};
+    use rusqlite::{Connection, Result, params};
     use super::*;
+    struct SearchResult {
+        id_position: usize,
+        vl_depth: usize,
+        vl_evaluation: isize,
+        id_searcher: usize,
+        vl_search_duration: usize,
+    }
+    
+    fn get_current_datetime_text() -> String {
+        let local: DateTime<Local> = Local::now();
+        local.format("%Y:%m:%d %H:%M:%S").to_string()
+    }
+    
+    fn insert_search_result(search_result: SearchResult) -> Result<()> {
+        let conn = get_connection()?;
+        let formatted_datetime = get_current_datetime_text();
+    
+        conn.execute(
+            "INSERT INTO TB_SEARCH_RESULTS (id_position, vl_depth, vl_evaluation, dh_search, id_searcher, vl_search_duration)
+             VALUES (?, ?, ?, ?, ?, ?)",
+            params![
+                search_result.id_position,
+                search_result.vl_depth,
+                search_result.vl_evaluation,
+                formatted_datetime,
+                search_result.id_searcher,
+                search_result.vl_search_duration
+            ],
+        )?;
+    
+        Ok(())
+    }
+
+    fn get_connection() -> Result<Connection>{
+        Connection::open(r#"D:\santorini\rusty-santorini-engines\engines\src\sql\santorini_db.db"#)
+    }
     pub fn create_new_position (board: Board, tipo:char) -> Result<()> {
         // Open a connection to the SQLite database file
-        let conn = Connection::open(r#"D:\santorini\rusty-santorini-engines\engines\src\sql\santorini_db.db"#)?;
+        let conn = get_connection()?;
 
         // Convert the blocks array to a string of 25 chars
         let blocks_str: String = board.blocks.iter().map(|&b| char::from(b)).collect();
@@ -81,7 +119,6 @@ pub(crate) mod sql_helpers{
             "INSERT INTO TB_POSITION (vl_blocks, vl_workers, cd_tipo, vl_turno) VALUES (?1, ?2, ?3, ?4)",
             [&blocks_str, &(workers.to_string()), &(tipo.to_string()), &(board.turn.to_string())],
         )?;
-
         Ok(())
     }
 }
