@@ -7,6 +7,7 @@ use crate::{Move, Board, Engine, EngineInfo, Request, SearchResult};
 use self::search::{SearchRequest, get_best_move};
 use self::time_management::get_time;
 pub use self::search::flop_v1_benchmark;
+pub use self::search::flop_v2_benchmark;
 
 fn convert_move(board: board_rep::Board, internal_move: board_rep::Move) -> Move {
     let build = if board.blocks[internal_move.to] == 3 {
