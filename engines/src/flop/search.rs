@@ -22,7 +22,7 @@ pub struct SearchRequest{
     pub debug: bool,
 }
 
-fn prepare_to_benchmark(f: fn(SearchRequest) -> SearchResult) -> impl Fn(BenchmarkRequest) -> SearchResult {
+fn prepare_to_benchmark(searcher: fn(&mut Board, usize) -> isize) -> impl Fn(BenchmarkRequest) -> SearchResult {
     move |benchmark_request| {
         let internal_board = Board {
             blocks: benchmark_request.position.blocks,
@@ -37,13 +37,12 @@ fn prepare_to_benchmark(f: fn(SearchRequest) -> SearchResult) -> impl Fn(Benchma
             time_left: None,
             debug: true,
         };
-
-        f(request)
+        get_move(request, searcher)
     }
 }
 
 pub fn flop_v1_benchmark(br:BenchmarkRequest) -> SearchResult{
-    prepare_to_benchmark(get_best_move)(br)
+    prepare_to_benchmark(negamax)(br)
 }
 
 fn negamax (node:&mut Board, depth:usize) -> isize{
@@ -81,8 +80,7 @@ fn negamax (node:&mut Board, depth:usize) -> isize{
 
 }
 
-
-pub fn get_best_move(request: SearchRequest) -> SearchResult {
+fn get_move(request: SearchRequest, searcher:fn(&mut Board, usize) -> isize) -> SearchResult{ 
     let thinking_time = match request.time_left {
         Some(duration) => get_time(duration),
         None => std::time::Duration::from_secs(0), // No thinking time if None
@@ -111,7 +109,7 @@ pub fn get_best_move(request: SearchRequest) -> SearchResult {
         }
         for i in 0..num_moves {
             board.make_move(available_moves[i]);
-            scores[i] = -negamax(&mut board, depth - 1);
+            scores[i] = -searcher(&mut board, depth - 1);
             board.undo_move(available_moves[i]);
             if request.debug{
                 print_with_timestamp(&format!("Move {} evaluated. Score: {}", i+1, scores[i]));
@@ -152,6 +150,9 @@ pub fn get_best_move(request: SearchRequest) -> SearchResult {
     }
 }
 
+pub fn get_best_move(request: SearchRequest) -> SearchResult{
+    get_move(request, negamax)
+}
 
 #[cfg(test)]
 mod tests {
