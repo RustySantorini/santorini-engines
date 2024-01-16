@@ -6,6 +6,7 @@ pub use crate::flop::Flop;
 pub use crate::models::*;
 
 pub use crate::flop::flop_v1_benchmark;
+pub use crate::flop::flop_v2_benchmark;
 
 pub fn get_engine(name: &str) -> Option<Box<dyn Engine>> {
     match name {

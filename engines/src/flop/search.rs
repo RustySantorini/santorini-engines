@@ -45,6 +45,10 @@ pub fn flop_v1_benchmark(br:BenchmarkRequest) -> SearchResult{
     prepare_to_benchmark(negamax)(br)
 }
 
+pub fn flop_v2_benchmark(br:BenchmarkRequest) -> SearchResult{
+    prepare_to_benchmark(alpha_beta_first_call)(br)
+}
+
 fn negamax (node:&mut Board, depth:usize) -> isize{
     let color =
         match node.turn {
@@ -79,6 +83,52 @@ fn negamax (node:&mut Board, depth:usize) -> isize{
     value
 
 }
+
+fn alpha_beta_first_call(node:&mut Board, depth:usize) -> isize{
+    alpha_beta_prunning(node, depth, -BIG_ENOUGH_VALUE, BIG_ENOUGH_VALUE)
+}
+
+fn alpha_beta_prunning (node:&mut Board, depth:usize, mut alpha:isize, beta:isize) -> isize{
+    let color =
+        match node.turn {
+            W => 1,
+            U => -1,
+            _ => unreachable!(),
+        };
+    match node.moves.last() {
+        Some(last) => {
+            if node.blocks[last.to] == 3 {
+                return -BIG_ENOUGH_VALUE - depth as isize;
+            }
+        }
+        None => {}
+    }   
+    if depth == 0{
+        return color * eval(node);      
+    }
+    let mut value = -BIG_ENOUGH_VALUE * 100;
+    let moves = node.generate_moves();
+    if moves.len() == 0{
+        value = -BIG_ENOUGH_VALUE - depth as isize;
+    }
+    for mv in moves{
+        node.make_move(mv);
+        let new_value = -alpha_beta_prunning(node, depth-1, -beta, -alpha);
+        node.undo_move(mv);
+        if new_value > value{
+            value = new_value;
+        }
+        if value > alpha{
+            alpha = value;
+        }
+        if alpha >= beta{
+            break;
+        }
+    }
+    value
+
+}
+
 
 fn get_move(request: SearchRequest, searcher:fn(&mut Board, usize) -> isize) -> SearchResult{ 
     let thinking_time = match request.time_left {
@@ -151,7 +201,7 @@ fn get_move(request: SearchRequest, searcher:fn(&mut Board, usize) -> isize) -> 
 }
 
 pub fn get_best_move(request: SearchRequest) -> SearchResult{
-    get_move(request, negamax)
+    get_move(request, alpha_beta_first_call)
 }
 
 #[cfg(test)]
