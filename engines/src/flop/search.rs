@@ -5,6 +5,7 @@ use std::time::Instant;
 use std::time::SystemTime;
 
 use crate::BenchmarkRequest;
+use crate::helpers::print_with_timestamp;
 use crate::helpers::squares::*;
 use crate::helpers::workers::*;
 use crate::helpers::turn::*;
@@ -110,14 +111,14 @@ pub fn get_best_move(request: SearchRequest) -> SearchResult {
     while running {
         depth += 1;
         if request.debug{
-            println!("Starting depth: {}", depth);
+            print_with_timestamp(&format!("Starting depth: {}", depth));
         }
         for i in 0..num_moves {
             board.make_move(available_moves[i]);
             scores[i] = -negamax(&mut board, depth - 1);
             board.undo_move(available_moves[i]);
             if request.debug{
-                println!("Move {} evaluated. Score: {}", i, scores[i]);
+                print_with_timestamp(&format!("Move {} evaluated. Score: {}", i+1, scores[i]));
             }
             if let Some(duration) = request.time_left {
                 if Instant::now() > limit_time {

@@ -1,3 +1,5 @@
+use chrono::Local;
+
 pub(crate) mod turn {
     pub const W: u8 = 0;
     pub const U: u8 = 1;
@@ -43,6 +45,10 @@ pub(crate) mod workers {
     pub const U2: usize = 3;
 }
 
+pub fn print_with_timestamp(message: &str) {
+    let timestamp = Local::now();
+    println!("[{}] {}", timestamp.format("%Y-%m-%d %H:%M:%S"), message);
+}
 
 
 
