@@ -56,6 +56,8 @@ pub fn insert_search_result(search_result: SearchResult) -> Result<()> {
 fn get_connection() -> Result<Connection>{
     Connection::open(r#"D:\santorini\rusty-santorini-engines\benchmarking\src\sql\santorini_db.db"#)
 }
+// Used manually
+#[allow(dead_code)]
 pub fn create_new_position (board: Board, tipo:char) -> Result<()> {
     // Open a connection to the SQLite database file
     let conn = get_connection()?;

@@ -5,7 +5,7 @@ fn main() {
         return;
     }
 
-    let engine_name = args.swap_remove(1);
+    let _engine_name = args.swap_remove(1);
 
     
 }

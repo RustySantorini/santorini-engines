@@ -1,7 +1,5 @@
 use crate::flop::board_rep::*;
-use crate::helpers::squares::*;
 use crate::helpers::workers::*;
-use crate::helpers::turn::*;
 
 fn position_height (board: &Board, p:fn (&Board, usize) -> usize, a:usize, b:usize, c:usize, worker_pos:usize) -> usize {
     let h = board.blocks[worker_pos];
@@ -29,6 +27,9 @@ pub fn eval (board: &Board) -> isize {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::helpers::squares::*;
+    use crate::helpers::turn::*;
+
     #[test]
     fn starting_position (){
         let board = 

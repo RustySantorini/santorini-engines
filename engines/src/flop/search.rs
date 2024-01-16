@@ -2,18 +2,14 @@ use std::isize::MIN;
 use std::ops::Add;
 use std::time::Duration;
 use std::time::Instant;
-use std::time::SystemTime;
 
 use crate::BenchmarkRequest;
 use crate::helpers::print_with_timestamp;
-use crate::helpers::squares::*;
-use crate::helpers::workers::*;
 use crate::helpers::turn::*;
 use crate::flop::board_rep::*;
 use crate::flop::eval::*;
 use crate::models::SearchResult;
 
-use super::convert_board;
 use super::convert_move;
 use super::time_management::get_time;
 
@@ -120,7 +116,7 @@ pub fn get_best_move(request: SearchRequest) -> SearchResult {
             if request.debug{
                 print_with_timestamp(&format!("Move {} evaluated. Score: {}", i+1, scores[i]));
             }
-            if let Some(duration) = request.time_left {
+            if let Some(_duration) = request.time_left {
                 if Instant::now() > limit_time {
                     running = false;
                 }
@@ -157,20 +153,22 @@ pub fn get_best_move(request: SearchRequest) -> SearchResult {
 }
 
 
-fn get_best_move_test(board:Board, depth:usize) -> Move{
-    let request = SearchRequest{
-        position:board,
-        max_depth: depth,
-        time_left: None,
-        debug: false,
-    };
-    let mv = get_best_move(request).mv;
-    Move{from: mv.from, to:mv.to, build: mv.build.unwrap_or(mv.from)}
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::helpers::squares::*;
+
+    fn get_best_move_test(board:Board, depth:usize) -> Move{
+        let request = SearchRequest{
+            position:board,
+            max_depth: depth,
+            time_left: None,
+            debug: false,
+        };
+        let mv = get_best_move(request).mv;
+        Move{from: mv.from, to:mv.to, build: mv.build.unwrap_or(mv.from)}
+    }
+
     #[test]
     fn m1(){
         let board = 
