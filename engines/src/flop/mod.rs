@@ -4,12 +4,9 @@ mod time_management;
 pub mod search;
 use crate::{Move, Board, Engine, EngineInfo, Request, SearchResult};
 
-use self::search::SearchRequest;
+use self::search::{SearchRequest, get_best_move};
 use self::time_management::get_time;
-pub use self::search::get_best_move;
-
-// Re-export board_rep::Board without directly importing it
-pub use self::board_rep::Board as BoardRepBoard;
+pub use self::search::flop_v1_benchmark;
 
 fn convert_move(board: board_rep::Board, internal_move: board_rep::Move) -> Move {
     let build = if board.blocks[internal_move.to] == 3 {
@@ -25,7 +22,7 @@ fn convert_move(board: board_rep::Board, internal_move: board_rep::Move) -> Move
 }
 
 fn convert_board(board: Board) -> board_rep::Board {
-    BoardRepBoard {
+    board_rep::Board {
         blocks: board.blocks,
         workers: board.workers,
         turn: board.turn,

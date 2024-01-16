@@ -4,6 +4,7 @@ use std::time::Duration;
 use std::time::Instant;
 use std::time::SystemTime;
 
+use crate::BenchmarkRequest;
 use crate::helpers::squares::*;
 use crate::helpers::workers::*;
 use crate::helpers::turn::*;
@@ -11,6 +12,7 @@ use crate::flop::board_rep::*;
 use crate::flop::eval::*;
 use crate::models::SearchResult;
 
+use super::convert_board;
 use super::convert_move;
 use super::time_management::get_time;
 
@@ -21,6 +23,30 @@ pub struct SearchRequest{
     pub max_depth:usize,
     pub time_left:Option<Duration>,
     pub debug: bool,
+}
+
+fn prepare_to_benchmark(f: fn(SearchRequest) -> SearchResult) -> impl Fn(BenchmarkRequest) -> SearchResult {
+    move |benchmark_request| {
+        let internal_board = Board {
+            blocks: benchmark_request.position.blocks,
+            workers: benchmark_request.position.workers,
+            turn: benchmark_request.position.turn,
+            moves: vec![],
+        };
+
+        let request = SearchRequest {
+            position: internal_board,
+            max_depth: benchmark_request.max_depth,
+            time_left: None,
+            debug: true,
+        };
+
+        f(request)
+    }
+}
+
+pub fn flop_v1_benchmark(br:BenchmarkRequest) -> SearchResult{
+    prepare_to_benchmark(get_best_move)(br)
 }
 
 fn negamax (node:&mut Board, depth:usize) -> isize{

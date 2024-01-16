@@ -14,6 +14,12 @@ pub struct SearchResult{
     pub time_spent: Option<Duration>,
 }
 
+pub struct BenchmarkRequest{
+    pub position:Board,
+    pub max_depth:usize,
+    pub debug: bool,
+}
+
 pub struct Board {
     pub blocks: [u8; 25],
     pub workers: [usize; 4],

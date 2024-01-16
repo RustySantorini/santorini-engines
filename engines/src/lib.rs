@@ -2,12 +2,11 @@ pub mod flop;
 mod helpers;
 mod models;
 
-
 pub use crate::flop::Flop;
 pub use crate::models::*;
 
-pub use crate::flop::get_best_move;
-pub use crate::flop::BoardRepBoard;
+pub use crate::flop::flop_v1_benchmark;
+
 pub fn get_engine(name: &str) -> Option<Box<dyn Engine>> {
     match name {
         "flop" => Some(Box::new(Flop::new())),
