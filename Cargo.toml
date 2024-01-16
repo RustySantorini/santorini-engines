@@ -1,4 +1,4 @@
 [workspace]
 default-members = ["game-manager"]
-members = ["engine-deploy", "engines", "game-manager"]
+members = ["engine-deploy", "engines", "game-manager", "benchmarking"]
 resolver = "2"
