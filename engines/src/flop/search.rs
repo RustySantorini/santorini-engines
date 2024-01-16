@@ -2,10 +2,9 @@ use std::isize::MIN;
 use std::ops::Add;
 use std::time::Duration;
 use std::time::Instant;
-use std::time::SystemTime;
 
-use crate::helpers::squares::*;
-use crate::helpers::workers::*;
+use crate::BenchmarkRequest;
+use crate::helpers::print_with_timestamp;
 use crate::helpers::turn::*;
 use crate::flop::board_rep::*;
 use crate::flop::eval::*;
@@ -21,6 +20,30 @@ pub struct SearchRequest{
     pub max_depth:usize,
     pub time_left:Option<Duration>,
     pub debug: bool,
+}
+
+fn prepare_to_benchmark(f: fn(SearchRequest) -> SearchResult) -> impl Fn(BenchmarkRequest) -> SearchResult {
+    move |benchmark_request| {
+        let internal_board = Board {
+            blocks: benchmark_request.position.blocks,
+            workers: benchmark_request.position.workers,
+            turn: benchmark_request.position.turn,
+            moves: vec![],
+        };
+
+        let request = SearchRequest {
+            position: internal_board,
+            max_depth: benchmark_request.max_depth,
+            time_left: None,
+            debug: true,
+        };
+
+        f(request)
+    }
+}
+
+pub fn flop_v1_benchmark(br:BenchmarkRequest) -> SearchResult{
+    prepare_to_benchmark(get_best_move)(br)
 }
 
 fn negamax (node:&mut Board, depth:usize) -> isize{
@@ -84,16 +107,16 @@ pub fn get_best_move(request: SearchRequest) -> SearchResult {
     while running {
         depth += 1;
         if request.debug{
-            println!("Starting depth: {}", depth);
+            print_with_timestamp(&format!("Starting depth: {}", depth));
         }
         for i in 0..num_moves {
             board.make_move(available_moves[i]);
             scores[i] = -negamax(&mut board, depth - 1);
             board.undo_move(available_moves[i]);
             if request.debug{
-                println!("Move {} evaluated. Score: {}", i, scores[i]);
+                print_with_timestamp(&format!("Move {} evaluated. Score: {}", i+1, scores[i]));
             }
-            if let Some(duration) = request.time_left {
+            if let Some(_duration) = request.time_left {
                 if Instant::now() > limit_time {
                     running = false;
                 }
@@ -130,20 +153,22 @@ pub fn get_best_move(request: SearchRequest) -> SearchResult {
 }
 
 
-fn get_best_move_test(board:Board, depth:usize) -> Move{
-    let request = SearchRequest{
-        position:board,
-        max_depth: depth,
-        time_left: None,
-        debug: false,
-    };
-    let mv = get_best_move(request).mv;
-    Move{from: mv.from, to:mv.to, build: mv.build.unwrap_or(mv.from)}
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::helpers::squares::*;
+
+    fn get_best_move_test(board:Board, depth:usize) -> Move{
+        let request = SearchRequest{
+            position:board,
+            max_depth: depth,
+            time_left: None,
+            debug: false,
+        };
+        let mv = get_best_move(request).mv;
+        Move{from: mv.from, to:mv.to, build: mv.build.unwrap_or(mv.from)}
+    }
+
     #[test]
     fn m1(){
         let board = 

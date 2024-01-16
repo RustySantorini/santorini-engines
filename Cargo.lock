@@ -104,6 +104,9 @@ version = "0.1.0"
 [[package]]
 name = "engines"
 version = "0.1.0"
+dependencies = [
+ "chrono",
+]
 
 [[package]]
 name = "fallible-iterator"

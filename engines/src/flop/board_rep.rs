@@ -204,7 +204,7 @@ impl Board {
 mod tests {
     use super::*;
 
-    const test_board_1: Board = Board {
+    const TEST_BOARD_1: Board = Board {
         blocks: [0, 0, 0, 0, 0,
                  0, 1, 0, 0, 0,
                  0, 4, 0, 2, 0,
@@ -214,7 +214,7 @@ mod tests {
         turn: W,
         moves: vec![],
     };
-    const test_board_2: Board = Board {
+    const TEST_BOARD_2: Board = Board {
         blocks: [0, 0, 0, 0, 0,
                  0, 0, 0, 0, 0,
                  0, 0, 0, 0, 0,
@@ -224,7 +224,7 @@ mod tests {
         turn: U,
         moves: vec![],
     };
-    const test_board_3: Board = Board {
+    const TEST_BOARD_3: Board = Board {
         blocks: [0, 0, 0, 0, 0,
                  0, 0, 0, 0, 0,
                  0, 0, 0, 2, 3,
@@ -236,125 +236,125 @@ mod tests {
     };
     #[test]
     fn worker_not_found() {
-        let mut board = test_board_1;
+        let board = TEST_BOARD_1;
 
         let mv = Move { from: E5, to: D5, build: D1 };
         assert_eq!(board.move_is_legal(mv), Err(MoveError::WorkerNotFound));
     }
     #[test]
     fn invalid_to_square() {
-        let mut board = test_board_1;
+        let board = TEST_BOARD_1;
 
         let mv = Move { from: D4, to: 25, build: D4 };
         assert_eq!(board.move_is_legal(mv), Err(MoveError::InvalidToSquare));
     }
     #[test]
     fn invalid_build_square() {
-        let mut board = test_board_1;
+        let board = TEST_BOARD_1;
 
         let mv = Move { from: D4, to: D5, build: 25 };
         assert_eq!(board.move_is_legal(mv), Err(MoveError::InvalidBuildSquare));
     }
     #[test]
     fn to_square_far_away() {
-        let mut board = test_board_1;
+        let board = TEST_BOARD_1;
 
         let mv = Move { from: D4, to: A1, build: A2 };
         assert_eq!(board.move_is_legal(mv), Err(MoveError::ToSquareInaccessible));
     }
     #[test]
     fn build_square_far_away() {
-        let mut board = test_board_1;
+        let board = TEST_BOARD_1;
 
         let mv = Move { from: D4, to: D5, build: A2 };
         assert_eq!(board.move_is_legal(mv), Err(MoveError::BuildSquareInaccessible));
     }
     #[test]
     fn to_square_occupied() {
-        let mut board = test_board_1;
+        let board = TEST_BOARD_1;
 
         let mv = Move { from: D4, to: C3, build: D3 };
         assert_eq!(board.move_is_legal(mv), Err(MoveError::OccupiedToSquare));
     }
     #[test]
     fn build_square_occupied() {
-        let mut board = test_board_1;
+        let board = TEST_BOARD_1;
 
         let mv = Move { from: D4, to: D3, build: C3 };
         assert_eq!(board.move_is_legal(mv), Err(MoveError::OccupiedBuildSquare));
     }
     #[test]
     fn move_to_self() {
-        let mut board = test_board_1;
+        let board = TEST_BOARD_1;
 
         let mv = Move { from: D4, to: D4, build: D3 };
         assert_eq!(board.move_is_legal(mv), Err(MoveError::OccupiedToSquare));
     }
     #[test]
     fn build_in_previous_square() {
-        let mut board = test_board_1;
+        let board = TEST_BOARD_1;
 
         let mv = Move { from: D4, to: D5, build: D4 };
         assert_eq!(board.move_is_legal(mv), Ok(()));
     }
     #[test]
     fn build_in_new_square() {
-        let mut board = test_board_1;
+        let board = TEST_BOARD_1;
 
         let mv = Move { from: D4, to: D5, build: D5 };
         assert_eq!(board.move_is_legal(mv), Err(MoveError::OccupiedBuildSquare));
     }
     #[test]
     fn height_difference() {
-        let mut board = test_board_1;
+        let board = TEST_BOARD_1;
 
         let mv = Move { from: D4, to: E5, build: E4 };
         assert_eq!(board.move_is_legal(mv), Err(MoveError::HeightDifferenceHigh));
     }
     #[test]
     fn wrong_color() {
-        let mut board = test_board_1;
+        let board = TEST_BOARD_1;
 
         let mv = Move { from: B3, to: A3, build: A2 };
         assert_eq!(board.move_is_legal(mv), Err(MoveError::WorkerOfWrongColor));
     }
     #[test]
     fn wrong_color_2() {
-        let mut board = test_board_2;
+        let board = TEST_BOARD_2;
 
         let mv = Move { from: A1, to: A2, build: A3 };
         assert_eq!(board.move_is_legal(mv), Err(MoveError::WorkerOfWrongColor));
     }
     #[test]
     fn wrong_build_on_win() {
-        let mut board = test_board_3;
+        let board = TEST_BOARD_3;
         let mv = Move { from: C4, to: C5, build: D5 };
         assert_eq!(board.move_is_legal(mv), Err(MoveError::InvalidBuildOnWin));
     }
     #[test]
     fn normal_move() {
-        let mut board = test_board_1;
+        let board = TEST_BOARD_1;
 
         let mv = Move { from: D4, to: D5, build: E4 };
         assert_eq!(board.move_is_legal(mv), Ok(()));
     }
     #[test]
     fn diagonal_move() {
-        let mut board = test_board_1;
+        let board = TEST_BOARD_1;
 
         let mv = Move { from: D4, to: C5, build: B5 };
         assert_eq!(board.move_is_legal(mv), Ok(()));
     }
     #[test]
     fn climbing_move() {
-        let mut board = test_board_1;
+        let board = TEST_BOARD_1;
 
         let mv = Move { from: D4, to: E3, build: E2 };
         assert_eq!(board.move_is_legal(mv), Ok(()));
     }
     #[test]
     fn jumping_move() {
-        let mut board = test_board_1;
+        let board = TEST_BOARD_1;
 
         let mv = Move { from: C4, to: C5, build: B5 };
         assert_eq!(board.move_is_legal(mv), Ok(()));
