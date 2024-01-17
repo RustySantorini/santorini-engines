@@ -1,6 +1,6 @@
 use chrono::prelude::*;
 
-use crate::Board;
+use engines::Board;
 use rusqlite::{Connection, Result, params, types::Value};
 pub fn hash_workers(workers:[usize;4]) -> usize{
     let mut sum:usize = 0;
