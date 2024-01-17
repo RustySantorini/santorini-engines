@@ -1,11 +1,11 @@
 use chrono::Local;
 
-pub(crate) mod turn {
+pub mod turn {
     pub const W: u8 = 0;
     pub const U: u8 = 1;
 }
 
-pub(crate) mod squares {
+pub mod squares {
     pub const A1: usize = 0;
     pub const A2: usize = 1;
     pub const A3: usize = 2;
@@ -38,7 +38,7 @@ pub(crate) mod squares {
 
 }
 
-pub(crate) mod workers {
+pub mod workers {
     pub const W1: usize = 0;
     pub const W2: usize = 1;
     pub const U1: usize = 2;

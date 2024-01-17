@@ -1,5 +1,5 @@
 pub mod flop;
-mod helpers;
+pub mod helpers;
 mod models;
 
 pub use crate::flop::Flop;
@@ -7,6 +7,7 @@ pub use crate::models::*;
 
 pub use crate::flop::flop_v1_benchmark;
 pub use crate::flop::flop_v2_benchmark;
+pub use crate::helpers::*;
 
 pub fn get_engine(name: &str) -> Option<Box<dyn Engine>> {
     match name {

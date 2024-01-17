@@ -162,7 +162,8 @@ fn get_move(request: SearchRequest, searcher:fn(&mut Board, usize) -> isize) -> 
             scores[i] = -searcher(&mut board, depth - 1);
             board.undo_move(available_moves[i]);
             if request.debug{
-                print_with_timestamp(&format!("Move {} evaluated. Score: {}", i+1, scores[i]));
+                print_with_timestamp(&format!("Move {} {:?} evaluated. Score: {}",
+                 i+1, available_moves[i], scores[i]));
             }
             if let Some(_duration) = request.time_left {
                 if Instant::now() > limit_time {
