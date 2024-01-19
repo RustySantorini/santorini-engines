@@ -1,4 +1,3 @@
-use std::isize::MIN;
 use std::ops::Add;
 use std::time::Duration;
 use std::time::Instant;
@@ -45,6 +44,13 @@ pub fn strange_v1_benchmark(br:BenchmarkRequest)-> SearchResult{
     prepare_to_benchmark()(br)
 }
     
+fn get_color(node:&Board) -> isize{
+    match node.turn {
+        W => 1,
+        U => -1,
+        _ => unreachable!(),
+    }
+} 
 
 fn alphabeta_id (
     node:&mut Board,
@@ -57,13 +63,11 @@ fn alphabeta_id (
     stop_at: Instant,
     in_pv: bool,
 )-> (isize, Vec<Move>){
+
     if nodes_searched % CHECK_CLOCK_EVERY == 0 && Instant::now() > stop_at {return (-BIG_ENOUGH_VALUE, vec![]);}
-    let color =
-        match node.turn {
-            W => 1,
-            U => -1,
-            _ => unreachable!(),
-        };
+
+    let color = get_color(node);
+
     match node.moves.last() {
         Some(last) => {
             if node.blocks[last.to] == 3 {
@@ -84,12 +88,14 @@ fn alphabeta_id (
         else{
             Some(last_pv[ply])
         };
+
     match previous_best_move{
         Some (mv) => {
             node.make_move(mv);
             let result = alphabeta_id(node, depth, ply+1, -beta, -alpha, last_pv.clone(), nodes_searched+1, stop_at, true);
             let new_value = -result.0;
             node.undo_move(mv);
+
             if new_value > value{
                 value = new_value;
                 pv = vec![mv];
@@ -105,6 +111,7 @@ fn alphabeta_id (
         None =>(),
     }
     let moves = node.generate_moves();
+
     if moves.len() == 0{
         return (-BIG_ENOUGH_VALUE - (depth - ply) as isize, vec![]);
     }
@@ -138,7 +145,7 @@ fn alphabeta_id (
 fn get_move(request: SearchRequest) -> SearchResult{ 
     let thinking_time = match request.time_left {
         Some(duration) => get_time(duration),
-        None => std::time::Duration::from_secs(10000), // No thinking time if None
+        None => std::time::Duration::from_secs(10000), 
     };
 
     let current_time = Instant::now();
@@ -178,8 +185,6 @@ fn get_move(request: SearchRequest) -> SearchResult{
     if request.debug{
         print_with_timestamp(&format!("Best move: {:?} Score: {} Depth: {}", best_move, best_score, depth));
     }
-
-    // dbg!(pv_table);
 
     SearchResult {
         mv: convert_move(board, best_move),
