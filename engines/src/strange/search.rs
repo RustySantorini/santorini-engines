@@ -41,6 +41,10 @@ fn prepare_to_benchmark() -> impl Fn(BenchmarkRequest) -> SearchResult {
         get_move(request)
     }
 }
+pub fn strange_v1_benchmark(br:BenchmarkRequest)-> SearchResult{
+    prepare_to_benchmark()(br)
+}
+    
 
 fn alphabeta_id (
     node:&mut Board,
@@ -170,6 +174,10 @@ fn get_move(request: SearchRequest) -> SearchResult{
 
     let best_move = best;
     let best_score = best_score;
+
+    if request.debug{
+        print_with_timestamp(&format!("Best move: {:?} Score: {} Depth: {}", best_move, best_score, depth));
+    }
 
     // dbg!(pv_table);
 

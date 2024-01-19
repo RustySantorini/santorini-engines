@@ -6,10 +6,12 @@ mod sql_helpers;
 mod benchmark;
 
 fn main() {
-    let mut depth = 1;
+    let mut depth = 5;
     loop{
         for _ in 0..4{
-            let _ = run_test(1, 14, depth);
+            for s in 1..3{
+                let _ = run_test(s, 1, depth);
+            }
         }
         depth += 1;
     }
