@@ -7,12 +7,11 @@ import numpy as np
 conn = sqlite3.connect("D:/santorini/rusty-santorini-engines/benchmarking/src/sql/santorini_db.db")
 cursor = conn.cursor()
 
-# Query to fetch the data including searcher names
+# Query to fetch the data including searcher names and ids
 query = """
     SELECT
         s.id_searcher,
         s.nm_engine,
-        sr.id_position,
         sr.vl_depth,
         sr.total_entries,
         sr.avg_search_duration
@@ -31,34 +30,27 @@ df = pd.read_sql_query(query, conn)
 conn.close()
 
 # Pivot the DataFrame to create a grouped structure
-df_pivot = df.pivot_table(index='nm_engine', columns='vl_depth', values='avg_search_duration', aggfunc='mean')
+df_pivot = df.pivot_table(index=['id_searcher', 'nm_engine'], columns='vl_depth', values='avg_search_duration', aggfunc='mean')
 
 # Convert nanoseconds to seconds
-df_pivot = df_pivot / 1e9
+def format_duration(duration):
+    # Your existing formatting logic here...
+    if duration < 1e3:
+        return f'{duration:.2f} ns'
+    elif duration < 1e6:
+        return f'{duration / 1e3:.2f} µs'
+    elif duration < 1e9:
+        return f'{duration / 1e6:.2f} ms'
+    elif duration < 60 * 1e9:
+        return f'{duration / 1e9:.2f} s'
+    elif duration < 60 * 60 * 1e9:
+        return f'{duration / (60 * 1e9):.2f} min'
+    else:
+        return f'{duration / (60 * 60 * 1e9):.2f} hr'
 
-# Create a grouped bar plot with logarithmic scale
-fig, ax = plt.subplots()
+# Format the DataFrame for printing with appropriate units
+formatted_table = df_pivot.applymap(format_duration).to_string()
 
-bar_width = 0.2  # Adjust the width of each bar
-engines = df_pivot.index
-num_depths = len(df_pivot.columns)
-
-for i, (engine, row) in enumerate(df_pivot.iterrows()):
-    positions = np.arange(num_depths) + i * bar_width
-    ax.bar(positions, row, bar_width, label=engine)
-
-# Set plot labels and title
-ax.set_xlabel('Depth')
-ax.set_ylabel('Average Search Duration (seconds)')
-ax.set_title('Performance Comparison of Searchers in Position 1')
-ax.set_yscale('log')  # Set logarithmic scale on the y-axis
-
-# Set x-axis ticks and labels
-ax.set_xticks(np.arange(num_depths) + (num_depths - 1) * bar_width / 2)
-ax.set_xticklabels(df_pivot.columns)
-
-# Add legend
-ax.legend(title='Searcher')
-
-# Show the plot
-plt.show()
+# Print the formatted table with both name and ID
+print("Table:")
+print(formatted_table)

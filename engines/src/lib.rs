@@ -1,5 +1,6 @@
 pub mod flop;
 pub mod strange;
+pub mod spectre;
 pub mod helpers;
 mod models;
 
