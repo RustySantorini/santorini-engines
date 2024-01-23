@@ -8,8 +8,9 @@ pub fn run_game(engines: [Box<dyn Engine> ; 2], time: Duration) {
         turn: 0,
     };
 
-    let start = Instant::now();
+    let mut times = [time, time];
     'game: loop {
+        let start = Instant::now();
         let SearchResult {
             mv: Move {
                 from,
@@ -22,7 +23,7 @@ pub fn run_game(engines: [Box<dyn Engine> ; 2], time: Duration) {
             time_spent: _,
         } = engines[board.turn as usize].get_move(Request {
             board,
-            time_left: time - (Instant::now() - start),
+            time_left: times[board.turn as usize],
         });
 
         for i in 0..board.workers.len() {
