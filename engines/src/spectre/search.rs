@@ -143,10 +143,8 @@ fn alphabeta_tt (
 }
 
 fn get_move(request: SearchRequest) -> SearchResult{ 
-    let thinking_time = match request.time_left {
-        Some(duration) => get_time(duration),
-        None => std::time::Duration::from_secs(10000), 
-    };
+    let thinking_time = request.time_left.unwrap_or(Duration::from_secs(10000));
+
 
     let current_time = Instant::now();
     let limit_time = current_time.add(thinking_time);
@@ -316,10 +314,8 @@ fn alphabeta_full_tt (
 }
 
 fn get_move_full_tt(request: SearchRequest) -> SearchResult{ 
-    let thinking_time = match request.time_left {
-        Some(duration) => get_time(duration),
-        None => std::time::Duration::from_secs(10000), 
-    };
+    let thinking_time = request.time_left.unwrap_or(Duration::from_secs(10000));
+
 
     let current_time = Instant::now();
     let limit_time = current_time.add(thinking_time);
