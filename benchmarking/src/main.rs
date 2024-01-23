@@ -6,22 +6,26 @@ mod sql_helpers;
 mod benchmark;
 
 fn main() {
+    // run_test(4, 15, 6);
     let mut depth = 1;
     loop{
-        for _ in 0..4{
-            let _ = run_test(1, 14, depth);
+        for _ in 0..2{
+            // for s in 3..5{
+                let _ = run_test(4, 14, depth);
+                let _ = run_test(5, 14, depth);
+            // }
         }
         depth += 1;
     }
 
     // let board = Board{
-    //     blocks: [0, 3, 3, 0, 3,
-    //              0, 3, 0, 4, 1,
-    //              0, 0, 1, 2, 4,
-    //              0, 0, 4, 1, 1,
-    //              0, 0, 4, 2, 0],
-    //     workers: [C3, D4, C2, C4],
-    //     turn: U,
+    //     blocks: [1, 4, 0, 3, 2,
+    //              3, 0, 0, 2, 3,
+    //              4, 0, 0, 0, 2,
+    //              0, 0, 4, 0, 0,
+    //              2, 0, 1, 1, 0],
+    //     workers: [C3, C2, B2, D2],
+    //     turn: W,
     // };
 
     // create_new_position(board, 'F');

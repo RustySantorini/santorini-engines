@@ -1,4 +1,3 @@
-use std::isize::MIN;
 use std::ops::Add;
 use std::time::Duration;
 use std::time::Instant;
@@ -6,14 +5,15 @@ use std::time::Instant;
 use crate::BenchmarkRequest;
 use crate::helpers::print_with_timestamp;
 use crate::helpers::turn::*;
-use crate::flop::board_rep::*;
-use crate::flop::eval::*;
+use crate::strange::board_rep::*;
+use crate::strange::eval::*;
 use crate::models::SearchResult;
 
 use super::convert_move;
 use super::time_management::get_time;
 
 const BIG_ENOUGH_VALUE:isize = 10000;
+const CHECK_CLOCK_EVERY:usize = 1000;
 
 pub struct SearchRequest{
     pub position:Board,
@@ -22,7 +22,7 @@ pub struct SearchRequest{
     pub debug: bool,
 }
 
-fn prepare_to_benchmark(searcher: fn(&mut Board, usize) -> isize) -> impl Fn(BenchmarkRequest) -> SearchResult {
+fn prepare_to_benchmark() -> impl Fn(BenchmarkRequest) -> SearchResult {
     move |benchmark_request| {
         let internal_board = Board {
             blocks: benchmark_request.position.blocks,
@@ -37,101 +37,112 @@ fn prepare_to_benchmark(searcher: fn(&mut Board, usize) -> isize) -> impl Fn(Ben
             time_left: None,
             debug: true,
         };
-        get_move(request, searcher)
+        get_move(request)
     }
 }
-
-pub fn flop_v1_benchmark(br:BenchmarkRequest) -> SearchResult{
-    prepare_to_benchmark(negamax)(br)
+pub fn strange_v1_benchmark(br:BenchmarkRequest)-> SearchResult{
+    prepare_to_benchmark()(br)
 }
+    
+fn get_color(node:&Board) -> isize{
+    match node.turn {
+        W => 1,
+        U => -1,
+        _ => unreachable!(),
+    }
+} 
 
-pub fn flop_v2_benchmark(br:BenchmarkRequest) -> SearchResult{
-    prepare_to_benchmark(alpha_beta_first_call)(br)
-}
+fn alphabeta_id (
+    node:&mut Board,
+    depth:usize,
+    ply:usize,
+    mut alpha:isize,
+    beta:isize,
+    last_pv: Vec<Move>,
+    nodes_searched: usize, 
+    stop_at: Instant,
+    in_pv: bool,
+)-> (isize, Vec<Move>){
 
-fn negamax (node:&mut Board, depth:usize) -> isize{
-    let color =
-        match node.turn {
-            W => 1,
-            U => -1,
-            _ => unreachable!(),
-        };
+    if nodes_searched % CHECK_CLOCK_EVERY == 0 && Instant::now() > stop_at {return (-BIG_ENOUGH_VALUE, vec![]);}
+
+    let color = get_color(node);
+
     match node.moves.last() {
         Some(last) => {
             if node.blocks[last.to] == 3 {
-                return -BIG_ENOUGH_VALUE - depth as isize;
+                return (-BIG_ENOUGH_VALUE - (depth - ply) as isize, vec![]);
             }
         }
         None => {}
     }   
-    if depth == 0{
-        return color * eval(node);      
+    if ply == depth{
+        return (color * eval(node), vec![]);  
     }
     let mut value = -BIG_ENOUGH_VALUE * 100;
-    let moves = node.generate_moves();
-    if moves.len() == 0{
-        value = -BIG_ENOUGH_VALUE - depth as isize;
-    }
-    for mv in moves{
-        node.make_move(mv);
-        let new_value = -negamax(node, depth-1);
-        if new_value > value{
-            value = new_value;
+    let mut pv:Vec<Move> = vec![];
+    let previous_best_move =
+        if depth == 1 || (ply+1 == depth) || in_pv == false{
+            None
         }
-        node.undo_move(mv);
-    }
-    value
-
-}
-
-fn alpha_beta_first_call(node:&mut Board, depth:usize) -> isize{
-    alpha_beta_prunning(node, depth, -BIG_ENOUGH_VALUE, BIG_ENOUGH_VALUE)
-}
-
-fn alpha_beta_prunning (node:&mut Board, depth:usize, mut alpha:isize, beta:isize) -> isize{
-    let color =
-        match node.turn {
-            W => 1,
-            U => -1,
-            _ => unreachable!(),
+        else{
+            Some(last_pv[ply])
         };
-    match node.moves.last() {
-        Some(last) => {
-            if node.blocks[last.to] == 3 {
-                return -BIG_ENOUGH_VALUE - depth as isize;
+
+    match previous_best_move{
+        Some (mv) => {
+            node.make_move(mv);
+            let result = alphabeta_id(node, depth, ply+1, -beta, -alpha, last_pv.clone(), nodes_searched+1, stop_at, true);
+            let new_value = -result.0;
+            node.undo_move(mv);
+
+            if new_value > value{
+                value = new_value;
+                pv = vec![mv];
+                pv.extend(result.1);
+            }
+            if value > alpha{
+                alpha = value;
+            }
+            if alpha >= beta{
+                return (value, pv);
             }
         }
-        None => {}
-    }   
-    if depth == 0{
-        return color * eval(node);      
+        None =>(),
     }
-    let mut value = -BIG_ENOUGH_VALUE * 100;
     let moves = node.generate_moves();
+
     if moves.len() == 0{
-        value = -BIG_ENOUGH_VALUE - depth as isize;
+        return (-BIG_ENOUGH_VALUE - (depth - ply) as isize, vec![]);
     }
     for mv in moves{
+        match previous_best_move{
+            Some(m) => if mv == m{continue;}
+            None => ()
+        }
         node.make_move(mv);
-        let new_value = -alpha_beta_prunning(node, depth-1, -beta, -alpha);
+        let result = alphabeta_id(node, depth, ply+1, -beta, -alpha, last_pv.clone(), nodes_searched+1, stop_at, false);
+        let new_value = -(result.0);
         node.undo_move(mv);
         if new_value > value{
             value = new_value;
         }
         if value > alpha{
             alpha = value;
+            pv = vec![mv];
+            pv.extend(result.1);
         }
         if alpha >= beta{
             break;
         }
     }
-    value
+    (value, pv)
 
 }
 
-
-fn get_move(request: SearchRequest, searcher:fn(&mut Board, usize) -> isize) -> SearchResult{ 
+fn get_move(request: SearchRequest) -> SearchResult{ 
     let thinking_time = request.time_left.unwrap_or(Duration::from_secs(10000));
+
 
     let current_time = Instant::now();
     let limit_time = current_time.add(thinking_time);
@@ -143,63 +154,46 @@ fn get_move(request: SearchRequest, searcher:fn(&mut Board, usize) -> isize) -> 
         turn: request.position.turn,
         moves: vec![],
     };
-    let available_moves = board.generate_moves();
-    let num_moves = available_moves.len();
-    let best_move = available_moves[0];
-    let mut scores: Vec<isize> = vec![MIN; num_moves];
+    let mut pv:Vec<Move> = vec![];
     let mut depth = 0;
+    let mut best_score = -BIG_ENOUGH_VALUE;
 
     while running {
         depth += 1;
         if request.debug{
             print_with_timestamp(&format!("Starting depth: {}", depth));
         }
-        for i in 0..num_moves {
-            board.make_move(available_moves[i]);
-            scores[i] = -searcher(&mut board, depth - 1);
-            board.undo_move(available_moves[i]);
-            if request.debug{
-                print_with_timestamp(&format!("Move {} {:?} evaluated. Score: {}",
-                 i+1, available_moves[i], scores[i]));
-            }
-            if let Some(_duration) = request.time_left {
-                if Instant::now() > limit_time {
-                    running = false;
-                }
-            }
-        }
-
+        let result = alphabeta_id(&mut board, depth, 0, -BIG_ENOUGH_VALUE, BIG_ENOUGH_VALUE, pv.clone(), 0, limit_time, true);
+        pv = result.1;
+        best_score = result.0;
         if depth == request.max_depth {
             running = false;
         } 
-
     }
     let end_time = Instant::now();
     let time_spent_thinking = end_time - current_time;
-    if let Some((index, &max_value)) = scores.iter().enumerate().max_by_key(|&(_, value)| value) {
-        // dbg!(&available_moves);
-        // dbg!(&scores);
-        let mv = available_moves[index];
-        SearchResult {
-            mv: convert_move(board, mv),
-            eval: Some(max_value),
-            pv: None,
-            time_spent: Some(time_spent_thinking),
-            depth_searched: Some(depth),
-        }
-    } else {
-        SearchResult {
-            mv: convert_move(board, best_move),
-            eval: None,
-            pv: None,
-            time_spent: Some(time_spent_thinking),
-            depth_searched: Some(depth),
-        }
+
+    let best= pv[0];
+
+    let best_move = best;
+    let best_score = best_score;
+
+    if request.debug{
+        print_with_timestamp(&format!("Best move: {:?} Score: {} Depth: {}", best_move, best_score, depth));
     }
+
+    SearchResult {
+        mv: convert_move(board, best_move),
+        eval: Some(best_score),
+        pv: None,
+        time_spent: Some(time_spent_thinking),
+        depth_searched: Some(depth),
+    }
+    
 }
 
 pub fn get_best_move(request: SearchRequest) -> SearchResult{
-    get_move(request, alpha_beta_first_call)
+    get_move(request)
 }
 
 #[cfg(test)]

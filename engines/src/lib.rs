@@ -4,6 +4,11 @@ mod models;
 
 use phf::{Map, phf_map};
 
+pub mod flop;
+pub mod strange;
+pub mod spectre;
+pub mod helpers;
+
 pub use crate::flop::Flop;
 
 pub use crate::models::*;
