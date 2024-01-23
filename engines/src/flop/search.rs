@@ -130,10 +130,12 @@ fn alpha_beta_prunning (node:&mut Board, depth:usize, mut alpha:isize, beta:isiz
 }
 
 
-fn get_move(request: SearchRequest, searcher:fn(&mut Board, usize) -> isize) -> SearchResult{ 
+fn get_move(request: SearchRequest, searcher: fn(&mut Board, usize) -> isize) -> SearchResult{ 
+    print!("{:?}", request.time_left);
+
     let thinking_time = match request.time_left {
         Some(duration) => get_time(duration),
-        None => std::time::Duration::from_secs(0), // No thinking time if None
+        None => { std::time::Duration::from_secs(0) } // No thinking time if None
     };
 
     let current_time = Instant::now();

@@ -2,3 +2,6 @@
 default-members = ["game-manager"]
 members = ["engine-deploy", "engines", "game-manager", "benchmarking"]
 resolver = "2"
+
+[workspace.dependencies]
+phf = { version = "0.11.2", features = ["macros"] }

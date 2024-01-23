@@ -1,11 +1,11 @@
+mod flop;
+mod helpers;
 mod models;
 
 use phf::{Map, phf_map};
 
-pub mod flop;
-pub mod helpers;
-
 pub use crate::flop::Flop;
+
 pub use crate::models::*;
 
 pub use crate::flop::flop_v1_benchmark;

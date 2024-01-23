@@ -15,16 +15,19 @@ pub struct SearchResult{
 }
 
 pub struct BenchmarkRequest{
-    pub position:Board,
-    pub max_depth:usize,
+    pub position: Board,
+    pub max_depth: usize,
     pub debug: bool,
 }
 
+#[derive(Clone, Copy)]
 pub struct Board {
     pub blocks: [u8; 25],
     pub workers: [usize; 4],
     pub turn: u8,
 }
+
+
 #[derive(Debug)]
 pub struct Move {
     pub from: usize,
