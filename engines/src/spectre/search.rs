@@ -22,8 +22,15 @@ pub struct SearchRequest{
     pub time_left:Option<Duration>,
     pub debug: bool,
 }
+#[derive(Clone, Debug)]
+struct TTEntry{
+    pub depth: u8,
+    pub flag: char,
+    pub value: isize,
+    pub mv: Move,
+}
 
-fn prepare_to_benchmark() -> impl Fn(BenchmarkRequest) -> SearchResult {
+fn prepare_to_benchmark(func: fn(SearchRequest) -> SearchResult) -> impl Fn(BenchmarkRequest) -> SearchResult {
     move |benchmark_request| {
         let internal_board = Board {
             blocks: benchmark_request.position.blocks,
@@ -37,11 +44,15 @@ fn prepare_to_benchmark() -> impl Fn(BenchmarkRequest) -> SearchResult {
             time_left: None,
             debug: true,
         };
-        get_move(request)
+        func(request)
     }
 }
 pub fn spectre_v1_benchmark(br:BenchmarkRequest)-> SearchResult{
-    prepare_to_benchmark()(br)
+    prepare_to_benchmark(get_move)(br)
+}
+
+pub fn spectre_v2_benchmark(br:BenchmarkRequest)-> SearchResult{
+    prepare_to_benchmark(get_move_full_tt)(br)
 }
     
 fn get_color(node:&Board) -> isize{
@@ -187,8 +198,182 @@ fn get_move(request: SearchRequest) -> SearchResult{
     
 }
 
+
+fn alphabeta_full_tt (
+    node: &mut Board,
+    depth: usize,
+    ply: usize,
+    mut alpha: isize,
+    mut beta: isize,
+    nodes_searched: usize,
+    stop_at: Instant,
+    tt: &mut HashMap<Board, TTEntry>,
+) -> isize {
+    if nodes_searched % CHECK_CLOCK_EVERY == 0 && Instant::now() > stop_at {
+        return -BIG_ENOUGH_VALUE;
+    }
+
+    let color = get_color(node);
+
+    if node.game_is_over() {
+        return -BIG_ENOUGH_VALUE - (depth - ply) as isize;
+    }
+
+    if ply == depth {
+        return color * eval(node);
+    }
+
+    let alpha_orig = alpha;
+    let entry_opt = tt.get(node).cloned();
+
+    let mut value = -BIG_ENOUGH_VALUE * 100;
+    let mut best_move = Move{from: 0, build: 0, to:0};
+
+    match entry_opt{
+        Some(entry) => {
+            if entry.depth == (depth - ply) as u8{
+                if entry.flag == 'E'{
+                    return entry.value as isize;
+                }
+                else if entry.flag == 'U' && (entry.value as isize) > alpha{
+                    alpha = entry.value as isize;
+                }
+                else if entry.flag == 'L' && (entry.value as isize) < beta{
+                    beta = entry.value as isize;
+                }
+            }
+
+            node.make_move(entry.mv);
+            let new_value = -alphabeta_full_tt(node, depth, ply + 1, -beta, -alpha, nodes_searched + 1, stop_at, tt);
+            node.undo_move(entry.mv);
+
+            if new_value > value {
+                value = new_value;
+                best_move = entry.mv;
+            }
+
+            if value > alpha {
+                alpha = value;
+            }
+
+            if alpha >= beta {
+                let flag =
+                    if value <= alpha_orig {'U'}
+                    else if value >= beta {'L'}
+                    else{'E'};
+
+                let new_entry =
+                TTEntry{
+                    depth: (depth - ply) as u8,
+                    flag: flag,
+                    value: value,
+                    mv: entry.mv,
+                };
+                tt.insert(*node, new_entry);
+                return value;
+            }
+        }
+        None => (),
+    }
+
+    let moves = node.generate_moves();
+
+    if moves.is_empty() {
+        return -BIG_ENOUGH_VALUE - (depth - ply) as isize;
+    }
+    for mv in moves {
+        node.make_move(mv);
+        let new_value = -alphabeta_full_tt(node, depth, ply + 1, -beta, -alpha, nodes_searched + 1, stop_at, tt);
+        node.undo_move(mv);
+
+        if new_value > value {
+            value = new_value;
+            best_move = mv;
+        }
+
+        if value > alpha {
+            alpha = value;
+        }
+
+        if alpha >= beta {
+            break;
+        }
+    }
+    let flag =
+        if value <= alpha_orig {'U'}
+        else if value >= beta {'L'}
+        else{'E'};
+
+    let new_entry =
+    TTEntry{
+        depth: (depth - ply) as u8,
+        flag: flag,
+        value: value ,
+        mv: best_move,
+    };
+    tt.insert(*node, new_entry);
+    value
+}
+
+fn get_move_full_tt(request: SearchRequest) -> SearchResult{ 
+    let thinking_time = match request.time_left {
+        Some(duration) => get_time(duration),
+        None => std::time::Duration::from_secs(10000), 
+    };
+
+    let current_time = Instant::now();
+    let limit_time = current_time.add(thinking_time);
+
+    let mut running = true;
+    let mut board = Board {
+        blocks: request.position.blocks,
+        workers: request.position.workers,
+        turn: request.position.turn,
+    };
+    let mut tt: HashMap<Board, TTEntry> = HashMap::new();
+    let mut depth = 0;
+    let mut best_score = -BIG_ENOUGH_VALUE;
+
+    while running {
+        depth += 1;
+        if request.debug{
+            print_with_timestamp(&format!("Starting depth: {}", depth));
+        }
+        let result = alphabeta_full_tt(&mut board, depth, 0, -BIG_ENOUGH_VALUE, BIG_ENOUGH_VALUE, 0, limit_time, &mut tt);
+        
+        if result > best_score{
+            best_score = result;
+        }
+
+        if depth == request.max_depth {
+            running = false;
+        } 
+    }
+    let end_time = Instant::now();
+    let time_spent_thinking = end_time - current_time;
+
+    let entry= tt.get(&board).unwrap();
+
+    let best_score = best_score;
+
+    if request.debug{
+        print_with_timestamp(&format!("Best move: {:?} Score: {} Depth: {}", entry.mv, best_score, depth));
+    }
+
+    SearchResult {
+        mv: convert_move(board, entry.mv),
+        eval: Some(best_score),
+        pv: None,
+        time_spent: Some(time_spent_thinking),
+        depth_searched: Some(depth),
+    }
+    
+}
+
+
+
 pub fn get_best_move(request: SearchRequest) -> SearchResult{
-    get_move(request)
+    get_move_full_tt(request)
 }
 
 #[cfg(test)]

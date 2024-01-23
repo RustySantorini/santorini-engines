@@ -20,7 +20,7 @@ query = """
     JOIN
         vw_search_results_summary sr ON s.id_searcher = sr.id_searcher
     WHERE
-        sr.id_position = 1
+        sr.id_position = 14
 """
 
 # Execute the query and fetch the results into a DataFrame

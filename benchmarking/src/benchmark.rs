@@ -3,6 +3,7 @@ use engines::BenchmarkRequest;
 use engines::flop_v2_benchmark;
 use engines::strange::search::strange_v1_benchmark;
 use engines::spectre::search::spectre_v1_benchmark;
+use engines::spectre::search::spectre_v2_benchmark;
 use crate::sql_helpers;
 
 fn get_engine(id_searcher:usize)-> fn(BenchmarkRequest) -> engines::SearchResult{
@@ -11,6 +12,7 @@ fn get_engine(id_searcher:usize)-> fn(BenchmarkRequest) -> engines::SearchResult
         2 => flop_v2_benchmark,
         3 => strange_v1_benchmark,
         4 => spectre_v1_benchmark,
+        5 => spectre_v2_benchmark,
         _ => unimplemented!(),
     }
 }

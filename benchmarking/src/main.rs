@@ -9,10 +9,11 @@ fn main() {
     // run_test(4, 15, 6);
     let mut depth = 1;
     loop{
-        for _ in 0..4{
-            for s in 1..3{
-                let _ = run_test(s, 15, depth);
-            }
+        for _ in 0..2{
+            // for s in 3..5{
+                let _ = run_test(4, 14, depth);
+                let _ = run_test(5, 14, depth);
+            // }
         }
         depth += 1;
     }
