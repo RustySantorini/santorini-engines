@@ -131,10 +131,7 @@ fn alpha_beta_prunning (node:&mut Board, depth:usize, mut alpha:isize, beta:isiz
 
 
 fn get_move(request: SearchRequest, searcher:fn(&mut Board, usize) -> isize) -> SearchResult{ 
-    let thinking_time = match request.time_left {
-        Some(duration) => get_time(duration),
-        None => std::time::Duration::from_secs(0), // No thinking time if None
-    };
+    let thinking_time = request.time_left.unwrap_or(Duration::from_secs(10000));
 
     let current_time = Instant::now();
     let limit_time = current_time.add(thinking_time);
