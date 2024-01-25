@@ -42,7 +42,7 @@ impl Engine for Strange {
 
     fn get_info(&self) -> EngineInfo {
         EngineInfo {
-            name: String::from("strange"),
+            name: String::from("spectre"),
             eval_range: (-46, 46),
         }
     }

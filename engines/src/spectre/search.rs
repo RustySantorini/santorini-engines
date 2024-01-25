@@ -11,7 +11,6 @@ use crate::spectre::eval::*;
 use crate::models::SearchResult;
 
 use super::convert_move;
-use super::time_management::get_time;
 
 const BIG_ENOUGH_VALUE:isize = 10000;
 const CHECK_CLOCK_EVERY:usize = 1000;
@@ -69,14 +68,16 @@ fn alphabeta_tt (
     ply: usize,
     mut alpha: isize,
     beta: isize,
-    nodes_searched: usize,
+    nodes_searched: &mut usize,
     stop_at: Instant,
     tt: &mut HashMap<Board, Move>,
+    running:&mut bool,
 ) -> isize {
-    if nodes_searched % CHECK_CLOCK_EVERY == 0 && Instant::now() > stop_at {
-        return -BIG_ENOUGH_VALUE;
+    *nodes_searched += 1;
+    if (! *running) || ((*nodes_searched % CHECK_CLOCK_EVERY == 0) && Instant::now() > stop_at) {
+        *running = false;
+        return 0;
     }
-
     let color = get_color(node);
 
     if node.game_is_over() {
@@ -91,7 +92,7 @@ fn alphabeta_tt (
 
     if let Some(mv) = tt.get(node).cloned() {
         node.make_move(mv);
-        let new_value = -alphabeta_tt(node, depth, ply + 1, -beta, -alpha, nodes_searched + 1, stop_at, tt);
+        let new_value = -alphabeta_tt(node, depth, ply + 1, -beta, -alpha, nodes_searched, stop_at, tt, running);
         node.undo_move(mv);
 
         if new_value > value {
@@ -122,7 +123,7 @@ fn alphabeta_tt (
         }
 
         node.make_move(mv);
-        let new_value = -alphabeta_tt(node, depth, ply + 1, -beta, -alpha, nodes_searched + 1, stop_at, tt);
+        let new_value = -alphabeta_tt(node, depth, ply + 1, -beta, -alpha, nodes_searched, stop_at, tt, running);
         node.undo_move(mv);
 
         if new_value > value {
@@ -158,13 +159,13 @@ fn get_move(request: SearchRequest) -> SearchResult{
     let mut tt: HashMap<Board, Move> = HashMap::new();
     let mut depth = 0;
     let mut best_score = -BIG_ENOUGH_VALUE;
-
+    let mut nodes_searched = 0;
     while running {
         depth += 1;
         if request.debug{
             print_with_timestamp(&format!("Starting depth: {}", depth));
         }
-        let result = alphabeta_tt(&mut board, depth, 0, -BIG_ENOUGH_VALUE, BIG_ENOUGH_VALUE, 0, limit_time, &mut tt);
+        let result = alphabeta_tt(&mut board, depth, 0, -BIG_ENOUGH_VALUE, BIG_ENOUGH_VALUE, &mut nodes_searched, limit_time, &mut tt, &mut running);
         
         if result > best_score{
             best_score = result;
@@ -203,12 +204,15 @@ fn alphabeta_full_tt (
     ply: usize,
     mut alpha: isize,
     mut beta: isize,
-    nodes_searched: usize,
+    nodes_searched: &mut usize,
     stop_at: Instant,
     tt: &mut HashMap<Board, TTEntry>,
+    running:&mut bool,
 ) -> isize {
-    if nodes_searched % CHECK_CLOCK_EVERY == 0 && Instant::now() > stop_at {
-        return -BIG_ENOUGH_VALUE;
+    *nodes_searched += 1;
+    if (! *running) || ((*nodes_searched % CHECK_CLOCK_EVERY == 0) && Instant::now() > stop_at) {
+        *running = false;
+        return 0;
     }
 
     let color = get_color(node);
@@ -242,7 +246,7 @@ fn alphabeta_full_tt (
             }
 
             node.make_move(entry.mv);
-            let new_value = -alphabeta_full_tt(node, depth, ply + 1, -beta, -alpha, nodes_searched + 1, stop_at, tt);
+            let new_value = -alphabeta_full_tt(node, depth, ply + 1, -beta, -alpha, nodes_searched, stop_at, tt, running);
             node.undo_move(entry.mv);
 
             if new_value > value {
@@ -281,7 +285,7 @@ fn alphabeta_full_tt (
     }
     for mv in moves {
         node.make_move(mv);
-        let new_value = -alphabeta_full_tt(node, depth, ply + 1, -beta, -alpha, nodes_searched + 1, stop_at, tt);
+        let new_value = -alphabeta_full_tt(node, depth, ply + 1, -beta, -alpha, nodes_searched, stop_at, tt, running);
         node.undo_move(mv);
 
         if new_value > value {
@@ -320,7 +324,6 @@ fn get_move_full_tt(request: SearchRequest) -> SearchResult{
     let current_time = Instant::now();
     let limit_time = current_time.add(thinking_time);
 
-    let mut running = true;
     let mut board = Board {
         blocks: request.position.blocks,
         workers: request.position.workers,
@@ -329,19 +332,20 @@ fn get_move_full_tt(request: SearchRequest) -> SearchResult{
     let mut tt: HashMap<Board, TTEntry> = HashMap::new();
     let mut depth = 0;
     let mut best_score = -BIG_ENOUGH_VALUE;
+    let mut running = true;
 
+    let mut nodes_searched:usize = 0;
     while running {
         depth += 1;
         if request.debug{
             print_with_timestamp(&format!("Starting depth: {}", depth));
         }
-        let result = alphabeta_full_tt(&mut board, depth, 0, -BIG_ENOUGH_VALUE, BIG_ENOUGH_VALUE, 0, limit_time, &mut tt);
-        
+        let result = alphabeta_full_tt(&mut board, depth, 0, -BIG_ENOUGH_VALUE, BIG_ENOUGH_VALUE, &mut nodes_searched, limit_time, &mut tt, &mut running);
         if result > best_score{
             best_score = result;
         }
 
-        if depth == request.max_depth {
+        if depth == request.max_depth{
             running = false;
         } 
     }

@@ -11,10 +11,9 @@ use crate::flop::eval::*;
 use crate::models::SearchResult;
 
 use super::convert_move;
-use super::time_management::get_time;
 
 const BIG_ENOUGH_VALUE:isize = 10000;
-
+#[derive(Debug)]
 pub struct SearchRequest{
     pub position:Board,
     pub max_depth:usize,
@@ -165,6 +164,7 @@ fn get_move(request: SearchRequest, searcher:fn(&mut Board, usize) -> isize) -> 
             if let Some(_duration) = request.time_left {
                 if Instant::now() > limit_time {
                     running = false;
+                    break;
                 }
             }
         }
