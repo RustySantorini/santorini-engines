@@ -10,7 +10,6 @@ use crate::strange::eval::*;
 use crate::models::SearchResult;
 
 use super::convert_move;
-use super::time_management::get_time;
 
 const BIG_ENOUGH_VALUE:isize = 10000;
 const CHECK_CLOCK_EVERY:usize = 1000;
@@ -59,13 +58,16 @@ fn alphabeta_id (
     mut alpha:isize,
     beta:isize,
     last_pv: Vec<Move>,
-    nodes_searched: usize, 
+    nodes_searched: &mut usize, 
     stop_at: Instant,
     in_pv: bool,
+    running:&mut bool,
 )-> (isize, Vec<Move>){
-
-    if nodes_searched % CHECK_CLOCK_EVERY == 0 && Instant::now() > stop_at {return (-BIG_ENOUGH_VALUE, vec![]);}
-
+    *nodes_searched += 1;
+    if (! *running) || ((*nodes_searched % CHECK_CLOCK_EVERY == 0) && Instant::now() > stop_at) {
+        *running = false;
+        return (0, vec![]);
+    }
     let color = get_color(node);
 
     match node.moves.last() {
@@ -92,7 +94,7 @@ fn alphabeta_id (
     match previous_best_move{
         Some (mv) => {
             node.make_move(mv);
-            let result = alphabeta_id(node, depth, ply+1, -beta, -alpha, last_pv.clone(), nodes_searched+1, stop_at, true);
+            let result = alphabeta_id(node, depth, ply+1, -beta, -alpha, last_pv.clone(), nodes_searched, stop_at, true, running);
             let new_value = -result.0;
             node.undo_move(mv);
 
@@ -121,7 +123,7 @@ fn alphabeta_id (
             None => ()
         }
         node.make_move(mv);
-        let result = alphabeta_id(node, depth, ply+1, -beta, -alpha, last_pv.clone(), nodes_searched+1, stop_at, false);
+        let result = alphabeta_id(node, depth, ply+1, -beta, -alpha, last_pv.clone(), nodes_searched, stop_at, false, running);
         let new_value = -(result.0);
         node.undo_move(mv);
         if new_value > value{
@@ -147,7 +149,6 @@ fn get_move(request: SearchRequest) -> SearchResult{
     let current_time = Instant::now();
     let limit_time = current_time.add(thinking_time);
 
-    let mut running = true;
     let mut board = Board {
         blocks: request.position.blocks,
         workers: request.position.workers,
@@ -157,13 +158,14 @@ fn get_move(request: SearchRequest) -> SearchResult{
     let mut pv:Vec<Move> = vec![];
     let mut depth = 0;
     let mut best_score = -BIG_ENOUGH_VALUE;
-
+    let mut running = true;
+    let mut nodes_searched = 0;
     while running {
         depth += 1;
         if request.debug{
             print_with_timestamp(&format!("Starting depth: {}", depth));
         }
-        let result = alphabeta_id(&mut board, depth, 0, -BIG_ENOUGH_VALUE, BIG_ENOUGH_VALUE, pv.clone(), 0, limit_time, true);
+        let result = alphabeta_id(&mut board, depth, 0, -BIG_ENOUGH_VALUE, BIG_ENOUGH_VALUE, pv.clone(), &mut nodes_searched, limit_time, true, &mut running);
         pv = result.1;
         best_score = result.0;
         if depth == request.max_depth {
