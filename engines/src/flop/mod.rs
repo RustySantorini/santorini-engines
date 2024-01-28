@@ -1,13 +1,12 @@
 mod board_rep;
 mod eval;
 mod time_management;
-pub mod search;
-use crate::{Engine, EngineInfo, Move, Request, SearchResult, Square, Turn, Worker};
+mod search;
+
+use crate::*;
 
 use self::search::{SearchRequest, get_best_move};
 use self::time_management::get_time;
-pub use self::search::flop_v1_benchmark;
-pub use self::search::flop_v2_benchmark;
 
 fn convert_move(board: board_rep::Board, internal_move: board_rep::Move) -> Move {
     let at = if board.blocks[internal_move.to] == 3 {
@@ -79,23 +78,14 @@ impl Engine for Flop {
 mod tests {
     use std::time::Duration;
 
-    use crate::helpers::squares::*;
-    use crate::helpers::turn::*;
 
     use super::*;
     #[test]
     fn t1() {
-        let board = crate::models::Board {
-            blocks: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            workers: [C2, C3, C4, C5],
-            turn: U,
-        };
+        let board = Board::new([C2, C3], [C4, C5]);
         let total_time = Duration::from_secs(60);
         let flop = Flop {};
-        let mv = flop.get_move(Request {
-            board,
-            time_left: total_time,
-        });
+        let mv = flop.get_move(board.get_request(total_time));
         dbg!(&mv);
     }
 }

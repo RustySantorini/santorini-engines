@@ -8,6 +8,8 @@ pub use Blocks::*;
 pub use Square::*;
 pub use Turn::*;
 
+use crate::helpers::workers;
+
 // Engine model
 
 pub trait Engine {
@@ -71,6 +73,9 @@ pub struct Board {
 }
 impl Board {
     pub fn new(workers_p1: [Square ; 2], workers_p2: [Square ; 2]) -> Self {
+        Board::new_custom(Default::default(), workers_p1, workers_p2, Default::default())
+    }
+    pub fn new_custom(blocks: [Blocks ; 25], workers_p1: [Square ; 2], workers_p2: [Square ; 2], turn: Turn) -> Self {
         assert_ne!(workers_p1[0], workers_p1[1], "Can't have two workers in the same square {}!", workers_p1[0]);
         assert_ne!(workers_p1[0], workers_p2[0], "Can't have two workers in the same square {}!", workers_p1[0]);
         assert_ne!(workers_p1[0], workers_p2[1], "Can't have two workers in the same square {}!", workers_p1[0]);
@@ -78,34 +83,23 @@ impl Board {
         assert_ne!(workers_p1[1], workers_p2[1], "Can't have two workers in the same square {}!", workers_p1[1]);
         assert_ne!(workers_p2[0], workers_p2[1], "Can't have two workers in the same square {}!", workers_p2[0]);
 
+        assert_ne!(blocks[workers_p1[0]], T4, "Can't place worker on T4 blocks at {}", workers_p1[0]);
+        assert_ne!(blocks[workers_p1[1]], T4, "Can't place worker on T4 blocks at {}", workers_p1[1]);
+        assert_ne!(blocks[workers_p2[0]], T4, "Can't place worker on T4 blocks at {}", workers_p2[0]);
+        assert_ne!(blocks[workers_p2[1]], T4, "Can't place worker on T4 blocks at {}", workers_p2[1]);
+
         let mut workers: [Option<Worker>; 25] = Default::default();
         workers[workers_p1[0]] = Some(Worker { turn: Turn::P1 });
         workers[workers_p1[1]] = Some(Worker { turn: Turn::P1 });
         workers[workers_p2[0]] = Some(Worker { turn: Turn::P2 });
         workers[workers_p2[1]] = Some(Worker { turn: Turn::P2 });
-
-        Board {
-            blocks: Default::default(),
-            workers,
-            turn: Default::default(),
-            victory: Default::default(),
-        }
-    }
-    pub fn new_custom(blocks: [Blocks ; 25], workers: [Option<Worker>; 25], turn: Turn) -> Self {
+        
         let mut board = Self {
             blocks,
             workers,
             turn,
             victory: None,
         };
-
-        for square in Square::squares() {
-            if let Some(worker) = board.workers[square] {
-                if board.blocks[square] == T4 {
-                    panic!("Can't intialize board with worker over T4 blocks at {}!", square);
-                }
-            }
-        }
 
         board.check_normal_victory();
         board.check_smother_victory();
