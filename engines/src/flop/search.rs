@@ -164,7 +164,6 @@ fn get_move(request: SearchRequest, searcher:fn(&mut Board, usize) -> isize) -> 
             if let Some(_duration) = request.time_left {
                 if Instant::now() > limit_time {
                     running = false;
-                    break;
                 }
             }
         }
