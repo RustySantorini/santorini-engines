@@ -194,7 +194,7 @@ impl Board {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug)]
 pub struct Move {
     pub from: Square,
     pub to: Square,

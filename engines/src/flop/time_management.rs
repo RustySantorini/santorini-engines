@@ -1,15 +1,16 @@
 use std::time::Duration;
 
-fn estimated_time_left(time_left:Duration, a:usize) -> Duration {
-    Duration::from_nanos((time_left.as_nanos() / (a as u128)).try_into().unwrap())
-}
+// fn estimated_time_left(time_left:Duration, a:usize) -> Duration {
+//     Duration::from_nanos((time_left.as_nanos() / (a as u128)).try_into().unwrap())
+// }
 
-fn etl_s(time_left:Duration) -> Duration {
-    estimated_time_left(time_left, 15)
-}
+// fn etl_s(time_left:Duration) -> Duration {
+//     estimated_time_left(time_left, 15)
+// }
 
-pub fn get_time(time_left:Duration) -> Duration{
-    etl_s(time_left)
+pub fn get_time(time_left:Duration) -> Duration {
+    // etl_s(time_left)
+    time_left / 15
 } 
 
 #[cfg(test)]

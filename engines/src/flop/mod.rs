@@ -8,6 +8,30 @@ use crate::*;
 use self::search::{SearchRequest, get_best_move};
 use self::time_management::get_time;
 
+pub struct Flop;
+pub fn new() -> Flop {
+    Flop {}
+}
+impl Engine for Flop {
+    fn get_info(&self) -> EngineInfo {
+        EngineInfo {
+            name: String::from("flop"),
+            eval_range: (-46, 46),
+        }
+    }
+    fn get_search_result(&self, request: Request) -> SearchResult {
+        let thinking_time = get_time(request.time_left);
+        let request = SearchRequest {
+            position: convert_board(request),
+            // We use a fixed depth to avoid growing to unnecessary depths when a game-ending move is found
+            max_depth: 20,
+            thinking_time,
+            debug: false,
+        };
+        get_best_move(request)
+    }
+}
+
 fn convert_move(board: board_rep::Board, internal_move: board_rep::Move) -> Move {
     let at = if board.blocks[internal_move.to] == 3 {
         None
@@ -24,7 +48,7 @@ fn convert_move(board: board_rep::Board, internal_move: board_rep::Move) -> Move
 fn convert_board(request: Request) -> board_rep::Board {
     let mut workers = [0 ; 4];
     let mut index1 = 0;
-    let mut index2 = 0;
+    let mut index2 = 2;
     for square in Square::squares() {
         if let Some(Worker { turn }) = request.workers[square] {
             match turn {
@@ -45,32 +69,6 @@ fn convert_board(request: Request) -> board_rep::Board {
         workers,
         turn: Into::<usize>::into(*request.turn) as u8,
         moves: Vec::new(),
-    }
-}
-
-pub struct Flop;
-pub fn new() -> Flop {
-    Flop {}
-}
-
-impl Engine for Flop {
-    fn get_info(&self) -> EngineInfo {
-        EngineInfo {
-            name: String::from("flop"),
-            eval_range: (-46, 46),
-        }
-    }
-
-    fn get_search_result(&self, request: Request) -> SearchResult {
-        let thinking_time = get_time(request.time_left);
-        let request = SearchRequest {
-            position: convert_board(request),
-            // We use a fixed depth to avoid growing to unnecessary depths when a game-ending move is found
-            max_depth: 20,
-            time_left: Some(thinking_time),
-            debug: false,
-        };
-        get_best_move(request)
     }
 }
 
