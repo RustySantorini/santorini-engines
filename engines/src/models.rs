@@ -4,6 +4,7 @@ use std::{
     time::Duration,
 };
 
+pub use Blocks::*;
 pub use Square::*;
 pub use Turn::*;
 
@@ -30,21 +31,21 @@ pub trait Engine {
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub enum Blocks {
     #[default]
-    B0,
-    B1,
-    B2,
-    B3,
-    B4,
+    T0,
+    T1,
+    T2,
+    T3,
+    T4,
 }
 impl Blocks {
     pub fn is_reachable(&self, other: &Blocks) -> bool {
         match (self, other) {
-            (Blocks::B3, _) => panic!("Can't start movement from 3 blocks high, because the mover already won!"),
-            (Blocks::B4, _) => panic!("Can't start movement from 4 blocks high!"),
-            (Blocks::B0, Blocks::B2) => false,
-            (Blocks::B0, Blocks::B3) => false,
-            (Blocks::B1, Blocks::B3) => false,
-            (_, Blocks::B4) => false,
+            (T3, _) => panic!("Can't start movement from 3 blocks high, because the mover already won!"),
+            (T4, _) => panic!("Can't start movement from 4 blocks high!"),
+            (T0, T2) => false,
+            (T0, T3) => false,
+            (T1, T3) => false,
+            (_, T4) => false,
             (_, _) => true,
         }
     }
@@ -52,11 +53,11 @@ impl Blocks {
 impl Into<usize> for Blocks {
     fn into(self) -> usize {
         match self {
-            Blocks::B0 => 0,
-            Blocks::B1 => 1,
-            Blocks::B2 => 2,
-            Blocks::B3 => 3,
-            Blocks::B4 => 4,
+            T0 => 0,
+            T1 => 1,
+            T2 => 2,
+            T3 => 3,
+            T4 => 4,
         }
     }
 }
@@ -89,6 +90,30 @@ impl Board {
             turn: Default::default(),
             victory: Default::default(),
         }
+    }
+    pub fn new_custom(blocks: [Blocks ; 25], workers: [Option<Worker>; 25], turn: Turn) -> Self {
+        let mut board = Self {
+            blocks,
+            workers,
+            turn,
+            victory: None,
+        };
+
+        for square in Square::squares() {
+            if let Some(worker) = board.workers[square] {
+                if board.blocks[square] == T4 {
+                    panic!("Can't intialize board with worker over T4 blocks at {}!", square);
+                }
+            }
+        }
+
+        board.check_normal_victory();
+        board.check_smother_victory();
+        if board.victory.is_some() {
+            panic!("Can't initalize board in won position!");
+        }
+
+        board
     }
 
     pub fn apply_move(&mut self, mv: Move) {
@@ -123,17 +148,17 @@ impl Board {
         assert!(self.workers[at].is_none(), "Can't build over worker at {}!", at);
 
         self.blocks[at] = match self.blocks[at] {
-            Blocks::B0 => Blocks::B1,
-            Blocks::B1 => Blocks::B2,
-            Blocks::B2 => Blocks::B3,
-            Blocks::B3 => Blocks::B4,
-            Blocks::B4 => panic!("Can't build over 4 blocks at {}!", at),
+            T0 => T1,
+            T1 => T2,
+            T2 => T3,
+            T3 => T4,
+            T4 => panic!("Can't build over 4 blocks at {}!", at),
         };
     }
     fn check_normal_victory(&mut self) {
         for square in 0..self.workers.len() {
             if let Some(worker) = self.workers[square] {
-                if self.blocks[square] == Blocks::B3 {
+                if self.blocks[square] == T3 {
                 self.victory = Some(worker.turn);
                 return;
                 }
@@ -457,7 +482,7 @@ pub struct Worker {
 
 
 
-
+// IDK
 
 pub struct EngineInfo {
     pub name: String,
