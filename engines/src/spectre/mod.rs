@@ -30,19 +30,19 @@ fn convert_board(board: Board) -> board_rep::Board {
     }
 }
 
-pub struct Strange;
+pub struct Spectre;
 
-impl Engine for Strange {
+impl Engine for Spectre {
     fn new() -> Self
     where
         Self: Sized,
     {
-        Strange {}
+        Spectre {}
     }
 
     fn get_info(&self) -> EngineInfo {
         EngineInfo {
-            name: String::from("strange"),
+            name: String::from("spectre"),
             eval_range: (-46, 46),
         }
     }
@@ -76,7 +76,7 @@ mod tests {
             turn: U,
         };
         let total_time = Duration::from_secs(60);
-        let flop = Strange {};
+        let flop = Spectre {};
         let mv = flop.get_move(Request {
             board,
             time_left: total_time,

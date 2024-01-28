@@ -19,7 +19,7 @@ pub fn run_game(engines: [Box<dyn Engine> ; 2], time: Duration) {
             },
             eval,
             pv: _,
-            depth_searched: _,
+            depth_searched: depth,
             time_spent: _,
         } = engines[board.turn as usize].get_move(Request {
             board,
@@ -34,7 +34,7 @@ pub fn run_game(engines: [Box<dyn Engine> ; 2], time: Duration) {
         }
         if let Some(build) = build {
             board.blocks[build] += 1;
-            println!("{from} -> {to} ({build}) ({})", eval.unwrap());
+            println!("{from} -> {to} ({build}) Eval= {} depth = {} ", eval.unwrap(), depth.unwrap());
         } else {
             println!("{from} -> {to} ({})", eval.unwrap());
         }

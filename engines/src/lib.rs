@@ -3,6 +3,8 @@ mod helpers;
 mod models;
 
 use phf::{Map, phf_map};
+use spectre::Spectre;
+use strange::Strange;
 
 pub mod strange;
 pub mod spectre;
@@ -28,4 +30,6 @@ pub fn get_engine(name: &str) -> Option<Box<dyn Engine>> {
 
 const ENGINE_REGISTRY: Map<&'static str, fn() -> Box<dyn Engine>> = phf_map! {
     "flop" => || Box::new(Flop::new()),
+    "spectre" => || Box::new(Spectre::new()),
+    "strange" => || Box::new(Strange::new()),
 };
