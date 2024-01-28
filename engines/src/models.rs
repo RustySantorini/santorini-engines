@@ -1,6 +1,11 @@
-use std::{fmt::Display, ops::{Index, IndexMut}, time::Duration};
+use std::{
+    fmt::Display,
+    ops::{Index, IndexMut},
+    time::Duration,
+};
 
-use Square::*;
+pub use Square::*;
+pub use Turn::*;
 
 // Engine model
 
@@ -388,11 +393,58 @@ impl Turn {
         }
     }
 }
+impl Display for Turn {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", match self {
+            P1 => "P1",
+            P2 => "P2",
+        })
+    }
+}
+impl<T> Index<Turn> for [T] {
+    type Output = T;
+
+    fn index(&self, index: Turn) -> &Self::Output {
+        &self[Into::<usize>::into(index)]
+    }
+}
+impl<T> IndexMut<Turn> for [T] {
+    fn index_mut(&mut self, index: Turn) -> &mut Self::Output {
+        &mut self[Into::<usize>::into(index)]
+    }
+}
+impl<T> Index<Turn> for Vec<T> {
+    type Output = T;
+
+    fn index(&self, index: Turn) -> &Self::Output {
+        &self[Into::<usize>::into(index)]
+    }
+}
+impl<T> IndexMut<Turn> for Vec<T> {
+    fn index_mut(&mut self, index: Turn) -> &mut Self::Output {
+        &mut self[Into::<usize>::into(index)]
+    }
+}
 impl Into<usize> for Turn {
     fn into(self) -> usize {
         match self {
             Turn::P1 => 0,
             Turn::P2 => 1,
+        }
+    }
+}
+impl TryFrom<usize> for Turn {
+    type Error = String;
+
+    fn try_from(value: usize) -> Result<Self, Self::Error> {
+        if value < 25 {
+            Ok(match value {
+                0 => P1,
+                1 => P2,
+                _ => unreachable!(),
+            })
+        } else {
+            Err(format!("{} is not a valid turn! Range is 0 <= value <= 1.", value))
         }
     }
 }

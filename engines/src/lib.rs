@@ -1,21 +1,23 @@
-mod flop;
 mod helpers;
 mod models;
 
 use phf::{Map, phf_map};
-use spectre::Spectre;
-use strange::Strange;
 
-pub mod strange;
-pub mod spectre;
+// Engines
 
-pub use crate::flop::Flop;
+mod flop;
+mod spectre;
+mod strange;
 
-pub use crate::models::*;
+const ENGINE_REGISTRY: Map<&'static str, fn() -> Box<dyn Engine>> = phf_map! {
+    "flop" => || Box::new(flop::Flop::new()),
+    "spectre" => || Box::new(spectre::Spectre::new()),
+    "strange" => || Box::new(strange::Strange::new()),
+};
 
-pub use crate::flop::flop_v1_benchmark;
-pub use crate::flop::flop_v2_benchmark;
-pub use crate::helpers::*;
+// Public
+
+pub use models::*;
 
 pub fn get_engine_names() -> Vec<&'static str> {
     ENGINE_REGISTRY.keys().map(|x| *x).collect()
@@ -27,9 +29,3 @@ pub fn get_engine(name: &str) -> Option<Box<dyn Engine>> {
         None
     } 
 }
-
-const ENGINE_REGISTRY: Map<&'static str, fn() -> Box<dyn Engine>> = phf_map! {
-    "flop" => || Box::new(Flop::new()),
-    "spectre" => || Box::new(Spectre::new()),
-    "strange" => || Box::new(Strange::new()),
-};
