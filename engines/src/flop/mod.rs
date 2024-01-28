@@ -2,7 +2,7 @@ mod board_rep;
 mod eval;
 mod time_management;
 pub mod search;
-use crate::{Move, Board, Engine, EngineInfo, Request, SearchResult};
+use crate::{Engine, EngineInfo, Move, Request, SearchResult, Square, Turn, Worker};
 
 use self::search::{SearchRequest, get_best_move};
 use self::time_management::get_time;
@@ -10,37 +10,55 @@ pub use self::search::flop_v1_benchmark;
 pub use self::search::flop_v2_benchmark;
 
 fn convert_move(board: board_rep::Board, internal_move: board_rep::Move) -> Move {
-    let build = if board.blocks[internal_move.to] == 3 {
+    let at = if board.blocks[internal_move.to] == 3 {
         None
     } else {
-        Some(internal_move.build)
+        Some(internal_move.build.try_into().unwrap())
     };
     Move {
-        from: internal_move.from,
-        to: internal_move.to,
-        build,
+        from: internal_move.from.try_into().unwrap(),
+        to: internal_move.to.try_into().unwrap(),
+        at,
     }
 }
 
-fn convert_board(board: Board) -> board_rep::Board {
+fn convert_board(request: Request) -> board_rep::Board {
+    let mut workers = [0 ; 4];
+    let mut index1 = 0;
+    let mut index2 = 0;
+    for square in Square::squares() {
+        if let Some(Worker { turn }) = request.workers[square] {
+            match turn {
+                Turn::P1 => {
+                    workers[index1] = square.into();
+                    index1 += 1;
+                }
+                Turn::P2 => {
+                    workers[index2] = square.into();
+                    index2 += 1;
+                }
+            }
+        }
+    }
+
     board_rep::Board {
-        blocks: board.blocks,
-        workers: board.workers,
-        turn: board.turn,
-        moves: vec![],
+        blocks: request.blocks.map(|x| Into::<usize>::into(x) as u8),
+        workers,
+        turn: Into::<usize>::into(*request.turn) as u8,
+        moves: Vec::new(),
     }
 }
 
 pub struct Flop;
-
-impl Engine for Flop {
-    fn new() -> Self
-    where
-        Self: Sized,
+impl Flop {
+    pub fn new() -> Self
     {
         Flop {}
     }
 
+}
+
+impl Engine for Flop {
     fn get_info(&self) -> EngineInfo {
         EngineInfo {
             name: String::from("flop"),
@@ -48,10 +66,10 @@ impl Engine for Flop {
         }
     }
 
-    fn get_move(&self, request: Request) -> SearchResult {
+    fn get_search_result(&self, request: Request) -> SearchResult {
         let thinking_time = get_time(request.time_left);
         let request = SearchRequest {
-            position: convert_board(request.board),
+            position: convert_board(request),
             // We use a fixed depth to avoid growing to unnecessary depths when a game-ending move is found
             max_depth: 20,
             time_left: Some(thinking_time),
