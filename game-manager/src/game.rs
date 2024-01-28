@@ -17,7 +17,7 @@ pub fn run_game(engines: [Box<dyn Engine> ; 2], time: Duration) {
         times[turn] -= delta;
 
         board.apply_move(mv);
-        println!("{:#?} {}: {}", times[turn], turn, mv);
+        println!("{}: {} [{:#?}]", turn, mv, times[turn]);
 
         if let Some(winner) = board.get_winner() {
             break *winner;
