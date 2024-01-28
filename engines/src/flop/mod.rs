@@ -50,12 +50,8 @@ fn convert_board(request: Request) -> board_rep::Board {
 }
 
 pub struct Flop;
-impl Flop {
-    pub fn new() -> Self
-    {
-        Flop {}
-    }
-
+pub fn new() -> Flop {
+    Flop {}
 }
 
 impl Engine for Flop {

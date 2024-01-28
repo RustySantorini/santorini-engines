@@ -10,7 +10,7 @@ mod spectre;
 mod strange;
 
 const ENGINE_REGISTRY: Map<&'static str, fn() -> Box<dyn Engine>> = phf_map! {
-    "flop" => || Box::new(flop::Flop::new()),
+    "flop" => || Box::new(flop::new()),
     "spectre" => || Box::new(spectre::Spectre::new()),
     "strange" => || Box::new(strange::Strange::new()),
 };
