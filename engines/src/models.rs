@@ -8,8 +8,6 @@ pub use Blocks::*;
 pub use Square::*;
 pub use Turn::*;
 
-use crate::helpers::workers;
-
 // Engine model
 
 pub trait Engine {
@@ -137,6 +135,12 @@ impl Board {
             time_left,
         }
     }
+    pub fn get_turn(&self) -> &Turn {
+        &self.turn
+    }
+    pub fn get_winner(&self) -> Option<&Turn> {
+        self.victory.as_ref()
+    }
 
     fn build(&mut self, at: Square) {
         assert!(self.workers[at].is_none(), "Can't build over worker at {}!", at);
@@ -195,6 +199,14 @@ pub struct Move {
     pub from: Square,
     pub to: Square,
     pub at: Option<Square>,
+}
+impl Display for Move {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.at {
+            Some(at) => write!(f, "{} -> {} ({})", self.from, self.to, at),
+            None => write!(f, "{} -> {}", self.from, self.to),
+        }
+    }
 }
 
 #[derive(Debug)]
